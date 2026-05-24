@@ -1,0 +1,3 @@
+// Sources/SwiftGeminiInteractions/SwiftGeminiInteractions.swift
+import Foundation
+import SwiftLLMToolMacros
