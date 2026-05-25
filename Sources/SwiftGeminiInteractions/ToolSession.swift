@@ -43,6 +43,8 @@ public struct ToolSessionResult: Sendable {
                 totalCachedTokens: acc.totalCachedTokens + usage.totalCachedTokens,
                 totalToolUseTokens: acc.totalToolUseTokens + usage.totalToolUseTokens,
                 totalTokens: acc.totalTokens + usage.totalTokens,
+                // inputTokensByModality is taken from the final iteration — per-iteration modality
+                // data is not additive across turns.
                 inputTokensByModality: usage.inputTokensByModality
             )
         }
@@ -136,6 +138,7 @@ public struct ToolSession: Sendable {
                 let name: String
                 let arguments: String
                 let output: String
+                let isError: Bool
                 let duration: Duration
             }
 
@@ -151,17 +154,22 @@ public struct ToolSession: Sendable {
                         let clock = ContinuousClock()
                         let start = clock.now
                         let output: String
+                        let isError: Bool
                         do {
                             if let h = handler {
                                 output = try await h(arguments)
+                                isError = false
                             } else {
+                                // Error case: no handler was registered for this tool name.
                                 output = "Error: No handler registered for tool '\(name)'"
+                                isError = true
                             }
                         } catch {
-                            output = "Error: \(error.localizedDescription)"
+                            output = "Error: \(String(describing: error))"
+                            isError = true
                         }
                         let duration = clock.now - start
-                        return ToolResult(callId: callId, name: name, arguments: arguments, output: output, duration: duration)
+                        return ToolResult(callId: callId, name: name, arguments: arguments, output: output, isError: isError, duration: duration)
                     }
                 }
                 for try await result in group {
@@ -184,7 +192,7 @@ public struct ToolSession: Sendable {
                 toolResults.first(where: { $0.callId == call.id })
             }
             currentInput = orderedResults.map { result in
-                FunctionOutput(callId: result.callId, result: result.output)
+                FunctionOutput(callId: result.callId, result: result.output, isError: result.isError)
             }
 
             previousId = interaction.id
