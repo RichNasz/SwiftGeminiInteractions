@@ -233,4 +233,35 @@ final class EncodingTests: XCTestCase {
         XCTAssertEqual(json["bit_rate"] as? Int, 128)
         XCTAssertEqual(json["delivery"] as? String, "uri")
     }
+
+    func testEnvironmentConfigWithInlineSource() throws {
+        let env = EnvironmentConfig(
+            sources: [.inline(target: "/workspace/main.py", content: "print('hello')")],
+            network: .disabled
+        )
+        let data = try encoder.encode(env)
+        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        XCTAssertEqual(json["type"] as? String, "remote")
+        XCTAssertEqual(json["network"] as? String, "disabled")
+        let sources = json["sources"] as? [[String: Any]]
+        XCTAssertEqual(sources?.first?["type"] as? String, "inline")
+    }
+
+    func testEnvironmentConfigWithAllowlist() throws {
+        let entry = NetworkAllowlistEntry(domain: "pypi.org", transform: nil)
+        let env = EnvironmentConfig(sources: nil, network: .allowlist([entry]))
+        let data = try encoder.encode(env)
+        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        let network = json["network"] as? [String: Any]
+        let allowlist = network?["allowlist"] as? [[String: Any]]
+        XCTAssertEqual(allowlist?.first?["domain"] as? String, "pypi.org")
+    }
+
+    func testWebhookConfigEncoding() throws {
+        let webhook = WebhookConfig(notificationEndpoints: ["https://example.com/hook"], userMetadata: ["jobId": "123"])
+        let data = try encoder.encode(webhook)
+        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        XCTAssertEqual((json["notification_endpoints"] as? [String])?.first, "https://example.com/hook")
+        XCTAssertEqual((json["user_metadata"] as? [String: String])?["jobId"], "123")
+    }
 }

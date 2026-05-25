@@ -743,10 +743,137 @@ public enum ResponseFormat: Codable, Sendable {
     }
 }
 
-// MARK: - Stubs for InteractionRequest dependencies
+// MARK: - Network and Environment Configuration
 
-public struct EnvironmentConfig: Codable, Sendable {}
-public struct WebhookConfig: Codable, Sendable {}
+public struct NetworkAllowlistEntry: Codable, Sendable {
+    public let domain: String
+    public let transform: [String: String]?
+
+    public init(domain: String, transform: [String: String]? = nil) {
+        self.domain = domain; self.transform = transform
+    }
+}
+
+public enum EnvironmentNetwork: Codable, Sendable {
+    case allowlist([NetworkAllowlistEntry])
+    case disabled
+
+    private struct AllowlistWrapper: Codable {
+        let allowlist: [NetworkAllowlistEntry]
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if let str = try? container.decode(String.self), str == "disabled" {
+            self = .disabled
+        } else {
+            let wrapper = try container.decode(AllowlistWrapper.self)
+            self = .allowlist(wrapper.allowlist)
+        }
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.singleValueContainer()
+        switch self {
+        case .disabled:
+            try container.encode("disabled")
+        case .allowlist(let entries):
+            try container.encode(AllowlistWrapper(allowlist: entries))
+        }
+    }
+}
+
+public enum EnvironmentSource: Codable, Sendable {
+    case inline(target: String, content: String)
+    case repository(source: String, target: String)
+    case gcs(source: String, target: String)
+
+    private enum CodingKeys: String, CodingKey {
+        case type, target, content, source
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let type = try container.decode(String.self, forKey: .type)
+        switch type {
+        case "inline":
+            self = .inline(
+                target: try container.decode(String.self, forKey: .target),
+                content: try container.decode(String.self, forKey: .content)
+            )
+        case "repository":
+            self = .repository(
+                source: try container.decode(String.self, forKey: .source),
+                target: try container.decode(String.self, forKey: .target)
+            )
+        case "gcs":
+            self = .gcs(
+                source: try container.decode(String.self, forKey: .source),
+                target: try container.decode(String.self, forKey: .target)
+            )
+        default:
+            throw DecodingError.dataCorruptedError(forKey: .type, in: container, debugDescription: "Unknown source type: \(type)")
+        }
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        switch self {
+        case .inline(let target, let content):
+            try container.encode("inline", forKey: .type)
+            try container.encode(target, forKey: .target)
+            try container.encode(content, forKey: .content)
+        case .repository(let source, let target):
+            try container.encode("repository", forKey: .type)
+            try container.encode(source, forKey: .source)
+            try container.encode(target, forKey: .target)
+        case .gcs(let source, let target):
+            try container.encode("gcs", forKey: .type)
+            try container.encode(source, forKey: .source)
+            try container.encode(target, forKey: .target)
+        }
+    }
+}
+
+public struct EnvironmentConfig: Codable, Sendable {
+    public let sources: [EnvironmentSource]?
+    public let network: EnvironmentNetwork?
+
+    public init(sources: [EnvironmentSource]? = nil, network: EnvironmentNetwork? = nil) {
+        self.sources = sources; self.network = network
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.sources = try container.decodeIfPresent([EnvironmentSource].self, forKey: .sources)
+        self.network = try container.decodeIfPresent(EnvironmentNetwork.self, forKey: .network)
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode("remote", forKey: .type)
+        try container.encodeIfPresent(sources, forKey: .sources)
+        try container.encodeIfPresent(network, forKey: .network)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case type, sources, network
+    }
+}
+
+public struct WebhookConfig: Codable, Sendable {
+    public let notificationEndpoints: [String]
+    public let userMetadata: [String: String]?
+
+    public init(notificationEndpoints: [String], userMetadata: [String: String]? = nil) {
+        self.notificationEndpoints = notificationEndpoints; self.userMetadata = userMetadata
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case notificationEndpoints = "notification_endpoints"
+        case userMetadata          = "user_metadata"
+    }
+}
 
 // MARK: - InteractionRequest
 
