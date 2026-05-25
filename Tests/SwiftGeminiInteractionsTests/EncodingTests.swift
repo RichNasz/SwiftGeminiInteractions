@@ -204,4 +204,30 @@ final class EncodingTests: XCTestCase {
         XCTAssertEqual(json["store"] as? Bool, true)
         XCTAssertNotNil(json["input"])
     }
+
+    func testTextResponseFormatEncoding() throws {
+        let format = ResponseFormat.text(mimeType: "application/json", schema: nil)
+        let data = try encoder.encode(format)
+        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        XCTAssertEqual(json["type"] as? String, "text")
+        XCTAssertEqual(json["mime_type"] as? String, "application/json")
+    }
+
+    func testImageResponseFormatEncoding() throws {
+        let format = ResponseFormat.image(mimeType: "image/png", aspectRatio: "16:9", imageSize: nil, delivery: .inline)
+        let data = try encoder.encode(format)
+        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        XCTAssertEqual(json["type"] as? String, "image")
+        XCTAssertEqual(json["mime_type"] as? String, "image/png")
+        XCTAssertEqual(json["delivery"] as? String, "inline")
+    }
+
+    func testAudioResponseFormatEncoding() throws {
+        let format = ResponseFormat.audio(mimeType: .mp3, sampleRate: 44100, bitRate: 128, delivery: .uri)
+        let data = try encoder.encode(format)
+        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        XCTAssertEqual(json["type"] as? String, "audio")
+        XCTAssertEqual(json["mime_type"] as? String, "audio/mp3")
+        XCTAssertEqual(json["sample_rate"] as? Int, 44100)
+    }
 }

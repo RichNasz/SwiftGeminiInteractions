@@ -663,9 +663,88 @@ public struct GenerationConfig: Codable, Sendable {
     }
 }
 
+// MARK: - ResponseFormat, ResponseDelivery, and AudioOutputMimeType
+
+public enum ResponseDelivery: String, Codable, Sendable {
+    case inline, uri
+}
+
+public enum AudioOutputMimeType: String, Codable, Sendable {
+    case mp3     = "audio/mp3"
+    case oggOpus = "audio/ogg_opus"
+    case l16     = "audio/l16"
+    case wav     = "audio/wav"
+    case alaw    = "audio/alaw"
+    case mulaw   = "audio/mulaw"
+}
+
+public enum ResponseFormat: Codable, Sendable {
+    case text(mimeType: String? = nil, schema: JSONSchemaValue? = nil)
+    case image(mimeType: String, aspectRatio: String? = nil, imageSize: String? = nil, delivery: ResponseDelivery? = nil)
+    case audio(mimeType: AudioOutputMimeType, sampleRate: Int? = nil, bitRate: Int? = nil, delivery: ResponseDelivery? = nil)
+
+    private enum CodingKeys: String, CodingKey {
+        case type, schema, delivery
+        case mimeType    = "mime_type"
+        case aspectRatio = "aspect_ratio"
+        case imageSize   = "image_size"
+        case sampleRate  = "sample_rate"
+        case bitRate     = "bit_rate"
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let type = try container.decode(String.self, forKey: .type)
+        switch type {
+        case "text":
+            self = .text(
+                mimeType: try container.decodeIfPresent(String.self, forKey: .mimeType),
+                schema: nil  // JSONSchemaValue is Encodable-only; schema cannot be decoded
+            )
+        case "image":
+            self = .image(
+                mimeType: try container.decode(String.self, forKey: .mimeType),
+                aspectRatio: try container.decodeIfPresent(String.self, forKey: .aspectRatio),
+                imageSize: try container.decodeIfPresent(String.self, forKey: .imageSize),
+                delivery: try container.decodeIfPresent(ResponseDelivery.self, forKey: .delivery)
+            )
+        case "audio":
+            self = .audio(
+                mimeType: try container.decode(AudioOutputMimeType.self, forKey: .mimeType),
+                sampleRate: try container.decodeIfPresent(Int.self, forKey: .sampleRate),
+                bitRate: try container.decodeIfPresent(Int.self, forKey: .bitRate),
+                delivery: try container.decodeIfPresent(ResponseDelivery.self, forKey: .delivery)
+            )
+        default:
+            throw DecodingError.dataCorruptedError(forKey: .type, in: container, debugDescription: "Unknown response format type: \(type)")
+        }
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        switch self {
+        case .text(let mimeType, let schema):
+            try container.encode("text", forKey: .type)
+            try container.encodeIfPresent(mimeType, forKey: .mimeType)
+            try container.encodeIfPresent(schema, forKey: .schema)
+        case .image(let mimeType, let aspectRatio, let imageSize, let delivery):
+            try container.encode("image", forKey: .type)
+            try container.encode(mimeType, forKey: .mimeType)
+            try container.encodeIfPresent(aspectRatio, forKey: .aspectRatio)
+            try container.encodeIfPresent(imageSize, forKey: .imageSize)
+            try container.encodeIfPresent(delivery, forKey: .delivery)
+        case .audio(let mimeType, let sampleRate, let bitRate, let delivery):
+            try container.encode("audio", forKey: .type)
+            try container.encode(mimeType, forKey: .mimeType)
+            try container.encodeIfPresent(sampleRate, forKey: .sampleRate)
+            try container.encodeIfPresent(bitRate, forKey: .bitRate)
+            try container.encodeIfPresent(delivery, forKey: .delivery)
+        }
+    }
+}
+
 // MARK: - Stubs for InteractionRequest dependencies
 
-public struct ResponseFormat: Codable, Sendable {}
 public struct EnvironmentConfig: Codable, Sendable {}
 public struct WebhookConfig: Codable, Sendable {}
 
