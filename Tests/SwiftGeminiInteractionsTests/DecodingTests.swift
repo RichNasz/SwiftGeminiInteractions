@@ -143,4 +143,68 @@ final class DecodingTests: XCTestCase {
             XCTAssertEqual(args, "{\"key\": \"value\"}")
         } else { XCTFail("Roundtrip should produce .functionCall") }
     }
+
+    func testFunctionToolDecoding() throws {
+        let json = """
+        {
+            "type": "function",
+            "name": "myFn",
+            "description": "Does something",
+            "parameters": {"type": "object", "properties": {}}
+        }
+        """.data(using: .utf8)!
+        let tool = try decoder.decode(InteractionTool.self, from: json)
+        if case .function(let name, let description, _) = tool {
+            XCTAssertEqual(name, "myFn")
+            XCTAssertEqual(description, "Does something")
+        } else { XCTFail("Expected .function") }
+    }
+
+    func testGoogleSearchToolDecoding() throws {
+        let json = "{\"type\": \"google_search\"}".data(using: .utf8)!
+        let tool = try decoder.decode(InteractionTool.self, from: json)
+        if case .googleSearch = tool { } else { XCTFail("Expected .googleSearch") }
+    }
+
+    func testFileSearchToolDecoding() throws {
+        let json = """
+        {
+            "type": "file_search",
+            "file_search_store_names": ["myStore"],
+            "top_k": 5
+        }
+        """.data(using: .utf8)!
+        let tool = try decoder.decode(InteractionTool.self, from: json)
+        if case .fileSearch(let storeNames, let topK, _) = tool {
+            XCTAssertEqual(storeNames, ["myStore"])
+            XCTAssertEqual(topK, 5)
+        } else { XCTFail("Expected .fileSearch") }
+    }
+
+    func testFunctionToolWithNumberConstraintsRoundtrip() throws {
+        // This verifies the integer-format minimum/maximum bug fix
+        let json = """
+        {
+            "type": "function",
+            "name": "fn",
+            "description": "d",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "count": {"type": "number", "minimum": 1, "maximum": 100}
+                }
+            }
+        }
+        """.data(using: .utf8)!
+        let tool = try decoder.decode(InteractionTool.self, from: json)
+        if case .function(_, _, let params) = tool {
+            if case .object(let props, _) = params,
+               let countProp = props.first(where: { $0.0 == "count" }) {
+                if case .number(_, let min, let max) = countProp.1 {
+                    XCTAssertEqual(min, 1.0, "minimum should be 1.0 not nil")
+                    XCTAssertEqual(max, 100.0, "maximum should be 100.0 not nil")
+                } else { XCTFail("Expected .number schema") }
+            } else { XCTFail("Expected .object schema with count property") }
+        } else { XCTFail("Expected .function") }
+    }
 }

@@ -426,7 +426,7 @@ private func jsonSchemaValueFromAny(_ any: Any) throws -> JSONSchemaValue {
     case "object":
         let propsDict = dict["properties"] as? [String: Any] ?? [:]
         let required = dict["required"] as? [String] ?? []
-        let properties: [(String, JSONSchemaValue)] = try propsDict.map { key, value in
+        let properties: [(String, JSONSchemaValue)] = try propsDict.sorted { $0.key < $1.key }.map { key, value in
             (key, try jsonSchemaValueFromAny(value))
         }
         return .object(properties: properties, required: required)
@@ -441,13 +441,13 @@ private func jsonSchemaValueFromAny(_ any: Any) throws -> JSONSchemaValue {
         return .string(description: description, enumValues: enumValues)
     case "integer":
         let description = dict["description"] as? String
-        let minimum = dict["minimum"] as? Int
-        let maximum = dict["maximum"] as? Int
+        let minimum = (dict["minimum"] as? Int) ?? (dict["minimum"] as? Double).map(Int.init)
+        let maximum = (dict["maximum"] as? Int) ?? (dict["maximum"] as? Double).map(Int.init)
         return .integer(description: description, minimum: minimum, maximum: maximum)
     case "number":
         let description = dict["description"] as? String
-        let minimum = dict["minimum"] as? Double
-        let maximum = dict["maximum"] as? Double
+        let minimum = (dict["minimum"] as? Double) ?? (dict["minimum"] as? Int).map(Double.init)
+        let maximum = (dict["maximum"] as? Double) ?? (dict["maximum"] as? Int).map(Double.init)
         return .number(description: description, minimum: minimum, maximum: maximum)
     case "boolean":
         return .boolean(description: dict["description"] as? String)
