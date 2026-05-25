@@ -93,4 +93,54 @@ final class DecodingTests: XCTestCase {
         """.data(using: .utf8)!
         XCTAssertThrowsError(try decoder.decode(Step.self, from: json))
     }
+
+    func testThoughtStepDecodingWithSummary() throws {
+        let json = """
+        {
+            "type": "thought",
+            "content": [{"type": "text", "text": "Thinking..."}],
+            "summary": "I thought about X"
+        }
+        """.data(using: .utf8)!
+        let step = try decoder.decode(Step.self, from: json)
+        if case .thought(let content, let summary) = step {
+            XCTAssertEqual(summary, "I thought about X")
+            if case .text(let text, _) = content.first {
+                XCTAssertEqual(text, "Thinking...")
+            } else { XCTFail("Expected text content") }
+        } else { XCTFail("Expected .thought") }
+    }
+
+    func testThoughtStepDecodingWithoutSummary() throws {
+        let json = """
+        {"type": "thought", "content": [{"type": "text", "text": "Hmm"}]}
+        """.data(using: .utf8)!
+        let step = try decoder.decode(Step.self, from: json)
+        if case .thought(_, let summary) = step {
+            XCTAssertNil(summary)
+        } else { XCTFail("Expected .thought") }
+    }
+
+    func testUrlContextResultDecoding() throws {
+        let json = """
+        {"type": "url_context_result", "call_id": "ctx-1", "content": "Page content here"}
+        """.data(using: .utf8)!
+        let step = try decoder.decode(Step.self, from: json)
+        if case .urlContextResult(let callId, let content) = step {
+            XCTAssertEqual(callId, "ctx-1")
+            XCTAssertEqual(content, "Page content here")
+        } else { XCTFail("Expected .urlContextResult") }
+    }
+
+    func testFunctionCallRoundtrip() throws {
+        let original = Step.functionCall(id: "c-1", name: "myFn", arguments: "{\"key\": \"value\"}")
+        let encoder = JSONEncoder()
+        let data = try encoder.encode(original)
+        let decoded = try decoder.decode(Step.self, from: data)
+        if case .functionCall(let id, let name, let args) = decoded {
+            XCTAssertEqual(id, "c-1")
+            XCTAssertEqual(name, "myFn")
+            XCTAssertEqual(args, "{\"key\": \"value\"}")
+        } else { XCTFail("Roundtrip should produce .functionCall") }
+    }
 }

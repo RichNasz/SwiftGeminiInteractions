@@ -205,6 +205,10 @@ public struct GoogleSearchResult: Codable, Sendable {
     public init(title: String? = nil, url: String? = nil, snippet: String? = nil) {
         self.title = title; self.url = url; self.snippet = snippet
     }
+
+    private enum CodingKeys: String, CodingKey {
+        case title, url, snippet
+    }
 }
 
 public struct FileSearchResult: Codable, Sendable {
