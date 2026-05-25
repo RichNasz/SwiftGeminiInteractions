@@ -1196,3 +1196,47 @@ public struct WebhookConfigParam: InteractionConfigParameter {
     public init(_ value: WebhookConfig) { self.value = value }
     public func apply(to request: inout InteractionRequest) { request.webhookConfig = value }
 }
+
+// MARK: - Result Builders
+
+@resultBuilder
+public struct InteractionConfigBuilder {
+    public static func buildBlock(_ components: [any InteractionConfigParameter]...) -> [any InteractionConfigParameter] {
+        components.flatMap { $0 }
+    }
+    public static func buildOptional(_ component: [any InteractionConfigParameter]?) -> [any InteractionConfigParameter] {
+        component ?? []
+    }
+    public static func buildEither(first component: [any InteractionConfigParameter]) -> [any InteractionConfigParameter] {
+        component
+    }
+    public static func buildEither(second component: [any InteractionConfigParameter]) -> [any InteractionConfigParameter] {
+        component
+    }
+    public static func buildArray(_ components: [[any InteractionConfigParameter]]) -> [any InteractionConfigParameter] {
+        components.flatMap { $0 }
+    }
+    public static func buildExpression(_ expression: any InteractionConfigParameter) -> [any InteractionConfigParameter] {
+        [expression]
+    }
+}
+
+@resultBuilder
+public struct StepsBuilder {
+    public static func buildBlock(_ components: [Step]...) -> [Step] { components.flatMap { $0 } }
+    public static func buildOptional(_ component: [Step]?) -> [Step] { component ?? [] }
+    public static func buildEither(first component: [Step]) -> [Step] { component }
+    public static func buildEither(second component: [Step]) -> [Step] { component }
+    public static func buildArray(_ components: [[Step]]) -> [Step] { components.flatMap { $0 } }
+    public static func buildExpression(_ expression: Step) -> [Step] { [expression] }
+}
+
+@resultBuilder
+public struct ToolsBuilder {
+    public static func buildBlock(_ components: [InteractionTool]...) -> [InteractionTool] { components.flatMap { $0 } }
+    public static func buildOptional(_ component: [InteractionTool]?) -> [InteractionTool] { component ?? [] }
+    public static func buildEither(first component: [InteractionTool]) -> [InteractionTool] { component }
+    public static func buildEither(second component: [InteractionTool]) -> [InteractionTool] { component }
+    public static func buildArray(_ components: [[InteractionTool]]) -> [InteractionTool] { components.flatMap { $0 } }
+    public static func buildExpression(_ expression: InteractionTool) -> [InteractionTool] { [expression] }
+}

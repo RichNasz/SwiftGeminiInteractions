@@ -66,4 +66,38 @@ final class ConfigTests: XCTestCase {
         XCTAssertEqual(request.generationConfig?.maxOutputTokens, 1024)
         XCTAssertEqual(request.store, true)
     }
+
+    func testInteractionConfigBuilderComposesParams() {
+        @InteractionConfigBuilder func buildConfig() -> [any InteractionConfigParameter] {
+            Temperature(0.8)
+            MaxOutputTokens(2048)
+            Store(true)
+        }
+        var request = InteractionRequest(input: .text("hi"))
+        for p in buildConfig() { p.apply(to: &request) }
+        XCTAssertEqual(try XCTUnwrap(request.generationConfig?.temperature), 0.8, accuracy: 0.001)
+        XCTAssertEqual(request.generationConfig?.maxOutputTokens, 2048)
+        XCTAssertEqual(request.store, true)
+    }
+
+    func testStepsBuilderComposesSteps() {
+        @StepsBuilder func buildSteps() -> [Step] {
+            User("Hello")
+            FunctionOutput(callId: "c1", result: "done")
+        }
+        let steps = buildSteps()
+        XCTAssertEqual(steps.count, 2)
+        if case .userInput = steps[0] { } else { XCTFail("First step should be userInput") }
+        if case .functionResult = steps[1] { } else { XCTFail("Second step should be functionResult") }
+    }
+
+    func testToolsBuilderComposesTools() {
+        let schema = JSONSchemaValue.object(properties: [], required: [])
+        @ToolsBuilder func buildTools() -> [InteractionTool] {
+            InteractionTool.googleSearch
+            InteractionTool.function(name: "myFn", description: "desc", parameters: schema)
+        }
+        let tools = buildTools()
+        XCTAssertEqual(tools.count, 2)
+    }
 }
