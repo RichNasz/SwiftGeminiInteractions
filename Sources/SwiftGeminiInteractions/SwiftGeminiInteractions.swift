@@ -1375,10 +1375,12 @@ public actor InteractionsClient {
             Task {
                 do {
                     var r = request
-                    r.stream = true
+                    r.store = true
                     let body = try await self.encode(r)
-                    let interactionsURL = await self.interactionsURL()
-                    let urlRequest = await self.makeRequest(url: interactionsURL, method: "POST", body: body)
+                    var components = URLComponents(url: await self.interactionsURL(), resolvingAgainstBaseURL: false)!
+                    components.queryItems = [URLQueryItem(name: "stream", value: "true")]
+                    let url = components.url!
+                    let urlRequest = await self.makeRequest(url: url, method: "POST", body: body)
                     let session = await self.session
                     let (bytes, response) = try await session.bytes(for: urlRequest)
                     guard let httpResponse = response as? HTTPURLResponse else {
