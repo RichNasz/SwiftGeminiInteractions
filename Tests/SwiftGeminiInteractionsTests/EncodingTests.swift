@@ -92,4 +92,40 @@ final class EncodingTests: XCTestCase {
         XCTAssertEqual(modalities?.first?["modality"] as? String, "text")
         XCTAssertEqual(modalities?.first?["tokens"] as? Int, 10)
     }
+
+    func testUserInputStepEncoding() throws {
+        let step = Step.userInput(content: [.text("Hello", annotations: nil)])
+        let data = try encoder.encode(step)
+        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        XCTAssertEqual(json["type"] as? String, "user_input")
+        let content = json["content"] as? [[String: Any]]
+        XCTAssertEqual(content?.first?["text"] as? String, "Hello")
+    }
+
+    func testFunctionCallStepEncoding() throws {
+        let step = Step.functionCall(id: "call-1", name: "myFn", arguments: "{\"x\": 1}")
+        let data = try encoder.encode(step)
+        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        XCTAssertEqual(json["type"] as? String, "function_call")
+        XCTAssertEqual(json["id"] as? String, "call-1")
+        XCTAssertEqual(json["name"] as? String, "myFn")
+        XCTAssertEqual(json["arguments"] as? String, "{\"x\": 1}")
+    }
+
+    func testFunctionResultStepEncoding() throws {
+        let step = Step.functionResult(callId: "call-1", result: "42", name: "myFn", isError: false)
+        let data = try encoder.encode(step)
+        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        XCTAssertEqual(json["type"] as? String, "function_result")
+        XCTAssertEqual(json["call_id"] as? String, "call-1")
+        XCTAssertEqual(json["result"] as? String, "42")
+    }
+
+    func testGoogleSearchCallStepEncoding() throws {
+        let step = Step.googleSearchCall(id: "search-1")
+        let data = try encoder.encode(step)
+        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        XCTAssertEqual(json["type"] as? String, "google_search_call")
+        XCTAssertEqual(json["id"] as? String, "search-1")
+    }
 }

@@ -59,4 +59,38 @@ final class DecodingTests: XCTestCase {
         XCTAssertEqual(usage.inputTokensByModality.first?.modality, "text")
         XCTAssertEqual(usage.inputTokensByModality.first?.tokens, 10)
     }
+
+    func testModelOutputStepDecoding() throws {
+        let json = """
+        {
+            "type": "model_output",
+            "content": [{"type": "text", "text": "Hi there"}]
+        }
+        """.data(using: .utf8)!
+        let step = try decoder.decode(Step.self, from: json)
+        if case .modelOutput(let content) = step {
+            if case .text(let text, _) = content.first {
+                XCTAssertEqual(text, "Hi there")
+            } else { XCTFail("Expected text content") }
+        } else { XCTFail("Expected .modelOutput") }
+    }
+
+    func testFunctionCallStepDecoding() throws {
+        let json = """
+        {"type": "function_call", "id": "call-1", "name": "myFn", "arguments": "{\\"x\\": 1}"}
+        """.data(using: .utf8)!
+        let step = try decoder.decode(Step.self, from: json)
+        if case .functionCall(let id, let name, let args) = step {
+            XCTAssertEqual(id, "call-1")
+            XCTAssertEqual(name, "myFn")
+            XCTAssertEqual(args, "{\"x\": 1}")
+        } else { XCTFail("Expected .functionCall") }
+    }
+
+    func testUnknownStepTypeThrows() {
+        let json = """
+        {"type": "unknown_future_type", "id": "x"}
+        """.data(using: .utf8)!
+        XCTAssertThrowsError(try decoder.decode(Step.self, from: json))
+    }
 }

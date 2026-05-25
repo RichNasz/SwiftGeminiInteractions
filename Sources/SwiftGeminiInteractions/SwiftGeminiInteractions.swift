@@ -197,6 +197,218 @@ public enum Content: Codable, Sendable {
     }
 }
 
+public struct GoogleSearchResult: Codable, Sendable {
+    public let title: String?
+    public let url: String?
+    public let snippet: String?
+
+    public init(title: String? = nil, url: String? = nil, snippet: String? = nil) {
+        self.title = title; self.url = url; self.snippet = snippet
+    }
+}
+
+public struct FileSearchResult: Codable, Sendable {
+    public let fileId: String?
+    public let fileName: String?
+    public let snippet: String?
+    public let score: Double?
+
+    public init(fileId: String? = nil, fileName: String? = nil, snippet: String? = nil, score: Double? = nil) {
+        self.fileId = fileId; self.fileName = fileName; self.snippet = snippet; self.score = score
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case fileId = "file_id"
+        case fileName = "file_name"
+        case snippet, score
+    }
+}
+
+public enum Step: Codable, Sendable {
+    case userInput(content: [Content])
+    case modelOutput(content: [Content])
+    case thought(content: [Content], summary: String?)
+    case functionCall(id: String, name: String, arguments: String)
+    case functionResult(callId: String, result: String, name: String?, isError: Bool?)
+    case codeExecutionCall(id: String, code: String)
+    case codeExecutionResult(callId: String, output: String, isError: Bool?)
+    case googleSearchCall(id: String)
+    case googleSearchResult(callId: String, results: [GoogleSearchResult])
+    case urlContextCall(id: String, urls: [String])
+    case urlContextResult(callId: String, content: String)
+    case mcpToolCall(id: String, name: String, arguments: String)
+    case mcpToolResult(callId: String, result: String)
+    case fileSearchCall(id: String)
+    case fileSearchResult(callId: String, results: [FileSearchResult])
+    case googleMapsCall(id: String)
+    case googleMapsResult(callId: String, result: String)
+
+    private enum CodingKeys: String, CodingKey {
+        case type, id, name, content, summary, arguments, result
+        case callId  = "call_id"
+        case isError = "is_error"
+        case code, output, results, urls
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let type = try container.decode(String.self, forKey: .type)
+        switch type {
+        case "user_input":
+            self = .userInput(content: try container.decode([Content].self, forKey: .content))
+        case "model_output":
+            self = .modelOutput(content: try container.decode([Content].self, forKey: .content))
+        case "thought":
+            self = .thought(
+                content: try container.decode([Content].self, forKey: .content),
+                summary: try container.decodeIfPresent(String.self, forKey: .summary)
+            )
+        case "function_call":
+            self = .functionCall(
+                id: try container.decode(String.self, forKey: .id),
+                name: try container.decode(String.self, forKey: .name),
+                arguments: try container.decode(String.self, forKey: .arguments)
+            )
+        case "function_result":
+            self = .functionResult(
+                callId: try container.decode(String.self, forKey: .callId),
+                result: try container.decode(String.self, forKey: .result),
+                name: try container.decodeIfPresent(String.self, forKey: .name),
+                isError: try container.decodeIfPresent(Bool.self, forKey: .isError)
+            )
+        case "code_execution_call":
+            self = .codeExecutionCall(
+                id: try container.decode(String.self, forKey: .id),
+                code: try container.decode(String.self, forKey: .code)
+            )
+        case "code_execution_result":
+            self = .codeExecutionResult(
+                callId: try container.decode(String.self, forKey: .callId),
+                output: try container.decode(String.self, forKey: .output),
+                isError: try container.decodeIfPresent(Bool.self, forKey: .isError)
+            )
+        case "google_search_call":
+            self = .googleSearchCall(id: try container.decode(String.self, forKey: .id))
+        case "google_search_result":
+            self = .googleSearchResult(
+                callId: try container.decode(String.self, forKey: .callId),
+                results: try container.decode([GoogleSearchResult].self, forKey: .results)
+            )
+        case "url_context_call":
+            self = .urlContextCall(
+                id: try container.decode(String.self, forKey: .id),
+                urls: try container.decode([String].self, forKey: .urls)
+            )
+        case "url_context_result":
+            self = .urlContextResult(
+                callId: try container.decode(String.self, forKey: .callId),
+                content: try container.decode(String.self, forKey: .content)
+            )
+        case "mcp_server_tool_call":
+            self = .mcpToolCall(
+                id: try container.decode(String.self, forKey: .id),
+                name: try container.decode(String.self, forKey: .name),
+                arguments: try container.decode(String.self, forKey: .arguments)
+            )
+        case "mcp_server_tool_result":
+            self = .mcpToolResult(
+                callId: try container.decode(String.self, forKey: .callId),
+                result: try container.decode(String.self, forKey: .result)
+            )
+        case "file_search_call":
+            self = .fileSearchCall(id: try container.decode(String.self, forKey: .id))
+        case "file_search_result":
+            self = .fileSearchResult(
+                callId: try container.decode(String.self, forKey: .callId),
+                results: try container.decode([FileSearchResult].self, forKey: .results)
+            )
+        case "google_maps_call":
+            self = .googleMapsCall(id: try container.decode(String.self, forKey: .id))
+        case "google_maps_result":
+            self = .googleMapsResult(
+                callId: try container.decode(String.self, forKey: .callId),
+                result: try container.decode(String.self, forKey: .result)
+            )
+        default:
+            throw DecodingError.dataCorruptedError(forKey: .type, in: container, debugDescription: "Unknown step type: \(type)")
+        }
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        switch self {
+        case .userInput(let content):
+            try container.encode("user_input", forKey: .type)
+            try container.encode(content, forKey: .content)
+        case .modelOutput(let content):
+            try container.encode("model_output", forKey: .type)
+            try container.encode(content, forKey: .content)
+        case .thought(let content, let summary):
+            try container.encode("thought", forKey: .type)
+            try container.encode(content, forKey: .content)
+            try container.encodeIfPresent(summary, forKey: .summary)
+        case .functionCall(let id, let name, let arguments):
+            try container.encode("function_call", forKey: .type)
+            try container.encode(id, forKey: .id)
+            try container.encode(name, forKey: .name)
+            try container.encode(arguments, forKey: .arguments)
+        case .functionResult(let callId, let result, let name, let isError):
+            try container.encode("function_result", forKey: .type)
+            try container.encode(callId, forKey: .callId)
+            try container.encode(result, forKey: .result)
+            try container.encodeIfPresent(name, forKey: .name)
+            try container.encodeIfPresent(isError, forKey: .isError)
+        case .codeExecutionCall(let id, let code):
+            try container.encode("code_execution_call", forKey: .type)
+            try container.encode(id, forKey: .id)
+            try container.encode(code, forKey: .code)
+        case .codeExecutionResult(let callId, let output, let isError):
+            try container.encode("code_execution_result", forKey: .type)
+            try container.encode(callId, forKey: .callId)
+            try container.encode(output, forKey: .output)
+            try container.encodeIfPresent(isError, forKey: .isError)
+        case .googleSearchCall(let id):
+            try container.encode("google_search_call", forKey: .type)
+            try container.encode(id, forKey: .id)
+        case .googleSearchResult(let callId, let results):
+            try container.encode("google_search_result", forKey: .type)
+            try container.encode(callId, forKey: .callId)
+            try container.encode(results, forKey: .results)
+        case .urlContextCall(let id, let urls):
+            try container.encode("url_context_call", forKey: .type)
+            try container.encode(id, forKey: .id)
+            try container.encode(urls, forKey: .urls)
+        case .urlContextResult(let callId, let content):
+            try container.encode("url_context_result", forKey: .type)
+            try container.encode(callId, forKey: .callId)
+            try container.encode(content, forKey: .content)
+        case .mcpToolCall(let id, let name, let arguments):
+            try container.encode("mcp_server_tool_call", forKey: .type)
+            try container.encode(id, forKey: .id)
+            try container.encode(name, forKey: .name)
+            try container.encode(arguments, forKey: .arguments)
+        case .mcpToolResult(let callId, let result):
+            try container.encode("mcp_server_tool_result", forKey: .type)
+            try container.encode(callId, forKey: .callId)
+            try container.encode(result, forKey: .result)
+        case .fileSearchCall(let id):
+            try container.encode("file_search_call", forKey: .type)
+            try container.encode(id, forKey: .id)
+        case .fileSearchResult(let callId, let results):
+            try container.encode("file_search_result", forKey: .type)
+            try container.encode(callId, forKey: .callId)
+            try container.encode(results, forKey: .results)
+        case .googleMapsCall(let id):
+            try container.encode("google_maps_call", forKey: .type)
+            try container.encode(id, forKey: .id)
+        case .googleMapsResult(let callId, let result):
+            try container.encode("google_maps_result", forKey: .type)
+            try container.encode(callId, forKey: .callId)
+            try container.encode(result, forKey: .result)
+        }
+    }
+}
+
 public struct Usage: Codable, Sendable {
     public let totalInputTokens: Int
     public let totalOutputTokens: Int
