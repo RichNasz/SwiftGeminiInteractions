@@ -1369,6 +1369,101 @@ public actor InteractionsClient {
         }
         throw GeminiInteractionsError.pollTimeout(id: id)
     }
+
+    public nonisolated func stream(_ request: InteractionRequest) -> AsyncThrowingStream<InteractionStreamEvent, Error> {
+        AsyncThrowingStream { continuation in
+            Task {
+                do {
+                    var r = request
+                    r.stream = true
+                    let body = try await self.encode(r)
+                    let interactionsURL = await self.interactionsURL()
+                    let urlRequest = await self.makeRequest(url: interactionsURL, method: "POST", body: body)
+                    let session = await self.session
+                    let (bytes, response) = try await session.bytes(for: urlRequest)
+                    guard let httpResponse = response as? HTTPURLResponse else {
+                        continuation.finish(throwing: GeminiInteractionsError.httpError(statusCode: 0, body: "No HTTP response"))
+                        return
+                    }
+                    guard (200...299).contains(httpResponse.statusCode) else {
+                        continuation.finish(throwing: GeminiInteractionsError.httpError(statusCode: httpResponse.statusCode, body: ""))
+                        return
+                    }
+                    let byteStream = AsyncThrowingStream<Data, Error> { bc in
+                        Task {
+                            do {
+                                var lineBuffer = Data()
+                                for try await byte in bytes {
+                                    lineBuffer.append(byte)
+                                    if byte == UInt8(ascii: "\n") {
+                                        bc.yield(lineBuffer)
+                                        lineBuffer = Data()
+                                    }
+                                }
+                                if !lineBuffer.isEmpty { bc.yield(lineBuffer) }
+                                bc.finish()
+                            } catch {
+                                bc.finish(throwing: error)
+                            }
+                        }
+                    }
+                    for try await event in parseSSE(from: byteStream) {
+                        continuation.yield(event)
+                    }
+                    continuation.finish()
+                } catch {
+                    continuation.finish(throwing: error)
+                }
+            }
+        }
+    }
+
+    public nonisolated func resumeStream(
+        id: String,
+        lastEventId: String
+    ) -> AsyncThrowingStream<InteractionStreamEvent, Error> {
+        AsyncThrowingStream { continuation in
+            Task {
+                do {
+                    var components = URLComponents(url: await self.interactionURL(id: id), resolvingAgainstBaseURL: false)!
+                    components.queryItems = [
+                        URLQueryItem(name: "stream", value: "true"),
+                        URLQueryItem(name: "last_event_id", value: lastEventId)
+                    ]
+                    let url = components.url!
+                    let urlRequest = await self.makeRequest(url: url, method: "GET")
+                    let session = await self.session
+                    let (bytes, response) = try await session.bytes(for: urlRequest)
+                    guard let httpResponse = response as? HTTPURLResponse,
+                          (200...299).contains(httpResponse.statusCode) else {
+                        continuation.finish()
+                        return
+                    }
+                    let byteStream = AsyncThrowingStream<Data, Error> { bc in
+                        Task {
+                            do {
+                                var buf = Data()
+                                for try await byte in bytes {
+                                    buf.append(byte)
+                                    if byte == UInt8(ascii: "\n") { bc.yield(buf); buf = Data() }
+                                }
+                                if !buf.isEmpty { bc.yield(buf) }
+                                bc.finish()
+                            } catch {
+                                bc.finish(throwing: error)
+                            }
+                        }
+                    }
+                    for try await event in parseSSE(from: byteStream) {
+                        continuation.yield(event)
+                    }
+                    continuation.finish()
+                } catch {
+                    continuation.finish(throwing: error)
+                }
+            }
+        }
+    }
 }
 
 // MARK: - InteractionStreamDelta
@@ -1476,5 +1571,56 @@ private struct InteractionStreamDeltaWrapper: Decodable {
     let value: InteractionStreamDelta
     init(from decoder: any Decoder) throws {
         value = try InteractionStreamDelta(from: decoder)
+    }
+}
+
+// MARK: - SSE Parser
+
+func parseSSE(from byteStream: AsyncThrowingStream<Data, Error>) -> AsyncThrowingStream<InteractionStreamEvent, Error> {
+    AsyncThrowingStream { continuation in
+        Task {
+            do {
+                var buffer = Data()
+                let decoder = JSONDecoder()
+
+                func processCompleteEvents() throws {
+                    while let range = buffer.range(of: Data("\n\n".utf8)) {
+                        let eventData = buffer[buffer.startIndex..<range.lowerBound]
+                        buffer.removeSubrange(buffer.startIndex...range.upperBound - 1)
+                        let lines = String(data: eventData, encoding: .utf8)?.components(separatedBy: "\n") ?? []
+                        for line in lines {
+                            guard line.hasPrefix("data: ") else { continue }
+                            let jsonStr = String(line.dropFirst("data: ".count))
+                            guard let jsonData = jsonStr.data(using: .utf8) else { continue }
+                            let event = try decoder.decode(InteractionStreamEvent.self, from: jsonData)
+                            if case .unknown = event { continue }
+                            continuation.yield(event)
+                        }
+                    }
+                }
+
+                for try await chunk in byteStream {
+                    buffer.append(chunk)
+                    try processCompleteEvents()
+                }
+
+                // Process any remaining data that wasn't terminated by \n\n
+                if !buffer.isEmpty {
+                    let lines = String(data: buffer, encoding: .utf8)?.components(separatedBy: "\n") ?? []
+                    for line in lines {
+                        guard line.hasPrefix("data: ") else { continue }
+                        let jsonStr = String(line.dropFirst("data: ".count))
+                        guard let jsonData = jsonStr.data(using: .utf8) else { continue }
+                        let event = try decoder.decode(InteractionStreamEvent.self, from: jsonData)
+                        if case .unknown = event { continue }
+                        continuation.yield(event)
+                    }
+                }
+
+                continuation.finish()
+            } catch {
+                continuation.finish(throwing: error)
+            }
+        }
     }
 }
