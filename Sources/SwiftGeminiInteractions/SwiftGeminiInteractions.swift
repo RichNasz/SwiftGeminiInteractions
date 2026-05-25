@@ -1240,3 +1240,113 @@ public struct ToolsBuilder {
     public static func buildArray(_ components: [[InteractionTool]]) -> [InteractionTool] { components.flatMap { $0 } }
     public static func buildExpression(_ expression: InteractionTool) -> [InteractionTool] { [expression] }
 }
+
+// MARK: - InteractionsClient
+
+public actor InteractionsClient {
+    private let apiKey: String
+    private let apiRevision: String
+    private let session: URLSession
+    let baseURL: URL
+
+    public init(apiKey: String, apiRevision: String = "2026-05-20") {
+        self.apiKey = apiKey
+        self.apiRevision = apiRevision
+        self.session = URLSession.shared
+        self.baseURL = URL(string: "https://generativelanguage.googleapis.com")!
+    }
+
+    init(apiKey: String, apiRevision: String = "2026-05-20", session: URLSession) {
+        self.apiKey = apiKey
+        self.apiRevision = apiRevision
+        self.session = session
+        self.baseURL = URL(string: "https://generativelanguage.googleapis.com")!
+    }
+
+    private func interactionsURL() -> URL {
+        baseURL.appendingPathComponent("v1beta/interactions")
+    }
+
+    private func interactionURL(id: String) -> URL {
+        interactionsURL().appendingPathComponent(id)
+    }
+
+    private func headers() -> [String: String] {
+        [
+            "x-goog-api-key": apiKey,
+            "Api-Revision": apiRevision,
+            "Content-Type": "application/json"
+        ]
+    }
+
+    private func makeRequest(url: URL, method: String, body: Data? = nil) -> URLRequest {
+        var urlRequest = URLRequest(url: url)
+        urlRequest.httpMethod = method
+        urlRequest.httpBody = body
+        for (key, value) in headers() {
+            urlRequest.setValue(value, forHTTPHeaderField: key)
+        }
+        return urlRequest
+    }
+
+    private func execute(_ urlRequest: URLRequest) async throws -> Data {
+        let (data, response): (Data, URLResponse)
+        do {
+            (data, response) = try await session.data(for: urlRequest)
+        } catch let urlError as URLError {
+            throw GeminiInteractionsError.networkError(urlError)
+        }
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw GeminiInteractionsError.httpError(statusCode: 0, body: "No HTTP response")
+        }
+        switch httpResponse.statusCode {
+        case 200...299:
+            return data
+        case 429:
+            throw GeminiInteractionsError.rateLimitExceeded
+        default:
+            let body = String(data: data, encoding: .utf8) ?? ""
+            throw GeminiInteractionsError.httpError(statusCode: httpResponse.statusCode, body: body)
+        }
+    }
+
+    private func decode<T: Decodable>(_ type: T.Type, from data: Data) throws -> T {
+        do {
+            return try JSONDecoder().decode(type, from: data)
+        } catch let decodingError as DecodingError {
+            throw GeminiInteractionsError.decodingError(decodingError)
+        }
+    }
+
+    private func encode<T: Encodable>(_ value: T) throws -> Data {
+        do {
+            return try JSONEncoder().encode(value)
+        } catch let encodingError as EncodingError {
+            throw GeminiInteractionsError.encodingError(encodingError)
+        }
+    }
+
+    public func send(_ request: InteractionRequest) async throws -> Interaction {
+        let body = try encode(request)
+        let urlRequest = makeRequest(url: interactionsURL(), method: "POST", body: body)
+        let data = try await execute(urlRequest)
+        return try decode(Interaction.self, from: data)
+    }
+
+    public func get(id: String) async throws -> Interaction {
+        let urlRequest = makeRequest(url: interactionURL(id: id), method: "GET")
+        let data = try await execute(urlRequest)
+        return try decode(Interaction.self, from: data)
+    }
+
+    public func delete(id: String) async throws {
+        let urlRequest = makeRequest(url: interactionURL(id: id), method: "DELETE")
+        _ = try await execute(urlRequest)
+    }
+
+    public func cancel(id: String) async throws {
+        let cancelURL = interactionURL(id: id).appendingPathComponent("cancel")
+        let urlRequest = makeRequest(url: cancelURL, method: "POST")
+        _ = try await execute(urlRequest)
+    }
+}

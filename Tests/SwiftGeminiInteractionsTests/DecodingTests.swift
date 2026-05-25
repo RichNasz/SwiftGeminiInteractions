@@ -338,4 +338,71 @@ final class DecodingTests: XCTestCase {
         XCTAssertEqual(interaction.functionCalls.count, 1)
         XCTAssertNil(interaction.outputText)
     }
+
+    func testClientSendReturnsInteraction() async throws {
+        MockURLProtocol.requestHandler = { request in
+            XCTAssertEqual(request.value(forHTTPHeaderField: "x-goog-api-key"), "test-key")
+            XCTAssertEqual(request.value(forHTTPHeaderField: "Api-Revision"), "2026-05-20")
+            XCTAssertEqual(request.httpMethod, "POST")
+            let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+            return (response, makeInteractionJSON())
+        }
+        let client = makeTestClient()
+        var request = InteractionRequest(input: .text("Hello"))
+        request.model = "gemini-3-flash-preview"
+        let interaction = try await client.send(request)
+        XCTAssertEqual(interaction.id, "v1_test")
+        XCTAssertEqual(interaction.status, .completed)
+    }
+
+    func testClientSend429ThrowsRateLimit() async {
+        MockURLProtocol.requestHandler = { request in
+            let response = HTTPURLResponse(url: request.url!, statusCode: 429, httpVersion: nil, headerFields: nil)!
+            return (response, Data())
+        }
+        let client = makeTestClient()
+        var request = InteractionRequest(input: .text("Hello"))
+        request.model = "gemini-3-flash-preview"
+        do {
+            _ = try await client.send(request)
+            XCTFail("Should have thrown")
+        } catch GeminiInteractionsError.rateLimitExceeded {
+            // pass
+        } catch {
+            XCTFail("Wrong error: \(error)")
+        }
+    }
+
+    func testClientGetReturnsInteraction() async throws {
+        MockURLProtocol.requestHandler = { request in
+            XCTAssertEqual(request.httpMethod, "GET")
+            XCTAssertTrue(request.url!.path.hasSuffix("/v1_test"))
+            let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+            return (response, makeInteractionJSON())
+        }
+        let client = makeTestClient()
+        let interaction = try await client.get(id: "v1_test")
+        XCTAssertEqual(interaction.id, "v1_test")
+    }
+
+    func testClientDeleteSends204() async throws {
+        MockURLProtocol.requestHandler = { request in
+            XCTAssertEqual(request.httpMethod, "DELETE")
+            let response = HTTPURLResponse(url: request.url!, statusCode: 204, httpVersion: nil, headerFields: nil)!
+            return (response, Data())
+        }
+        let client = makeTestClient()
+        try await client.delete(id: "v1_test")  // should not throw
+    }
+
+    func testClientCancelSendsPostToCancel() async throws {
+        MockURLProtocol.requestHandler = { request in
+            XCTAssertEqual(request.httpMethod, "POST")
+            XCTAssertTrue(request.url!.path.hasSuffix("/cancel"))
+            let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+            return (response, makeInteractionJSON(status: "cancelled"))
+        }
+        let client = makeTestClient()
+        try await client.cancel(id: "v1_test")  // should not throw
+    }
 }
