@@ -92,11 +92,12 @@ final class DecodingTests: XCTestCase {
         } else { XCTFail("Expected .functionCall") }
     }
 
-    func testUnknownStepTypeThrows() {
+    func testUnknownStepTypeDecodesAsUnknown() throws {
         let json = """
         {"type": "unknown_future_type", "id": "x"}
         """.data(using: .utf8)!
-        XCTAssertThrowsError(try decoder.decode(Step.self, from: json))
+        let step = try decoder.decode(Step.self, from: json)
+        if case .unknown = step { } else { XCTFail("Expected .unknown for unrecognised step type") }
     }
 
     func testThoughtStepDecodingWithSummary() throws {

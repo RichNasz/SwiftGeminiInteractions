@@ -276,6 +276,7 @@ public enum Step: Codable, Sendable {
     case fileSearchResult(callId: String, results: [FileSearchResult])
     case googleMapsCall(id: String)
     case googleMapsResult(callId: String, result: String)
+    case unknown
 
     private enum CodingKeys: String, CodingKey {
         case type, id, name, content, summary, arguments, result
@@ -289,12 +290,12 @@ public enum Step: Codable, Sendable {
         let type = try container.decode(String.self, forKey: .type)
         switch type {
         case "user_input":
-            self = .userInput(content: try container.decode([Content].self, forKey: .content))
+            self = .userInput(content: try container.decodeIfPresent([Content].self, forKey: .content) ?? [])
         case "model_output":
-            self = .modelOutput(content: try container.decode([Content].self, forKey: .content))
+            self = .modelOutput(content: try container.decodeIfPresent([Content].self, forKey: .content) ?? [])
         case "thought":
             self = .thought(
-                content: try container.decode([Content].self, forKey: .content),
+                content: try container.decodeIfPresent([Content].self, forKey: .content) ?? [],
                 summary: try container.decodeIfPresent(String.self, forKey: .summary)
             )
         case "function_call":
@@ -364,7 +365,7 @@ public enum Step: Codable, Sendable {
                 result: try container.decode(String.self, forKey: .result)
             )
         default:
-            throw DecodingError.dataCorruptedError(forKey: .type, in: container, debugDescription: "Unknown step type: \(type)")
+            self = .unknown
         }
     }
 
@@ -439,6 +440,8 @@ public enum Step: Codable, Sendable {
             try container.encode("google_maps_result", forKey: .type)
             try container.encode(callId, forKey: .callId)
             try container.encode(result, forKey: .result)
+        case .unknown:
+            break
         }
     }
 }
