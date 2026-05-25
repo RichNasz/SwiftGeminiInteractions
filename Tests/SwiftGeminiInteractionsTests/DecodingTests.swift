@@ -242,4 +242,51 @@ final class DecodingTests: XCTestCase {
             XCTAssertEqual(delivery, .uri)
         } else { XCTFail("Expected .audio ResponseFormat") }
     }
+
+    func testEnvironmentNetworkDisabledDecoding() throws {
+        let json = "\"disabled\"".data(using: .utf8)!
+        let network = try decoder.decode(EnvironmentNetwork.self, from: json)
+        if case .disabled = network { } else { XCTFail("Expected .disabled") }
+    }
+
+    func testEnvironmentNetworkAllowlistDecoding() throws {
+        let json = """
+        {"allowlist": [{"domain": "pypi.org"}]}
+        """.data(using: .utf8)!
+        let network = try decoder.decode(EnvironmentNetwork.self, from: json)
+        if case .allowlist(let entries) = network {
+            XCTAssertEqual(entries.first?.domain, "pypi.org")
+        } else { XCTFail("Expected .allowlist") }
+    }
+
+    func testEnvironmentSourceInlineDecoding() throws {
+        let json = """
+        {"type": "inline", "target": "/workspace/main.py", "content": "print('hello')"}
+        """.data(using: .utf8)!
+        let source = try decoder.decode(EnvironmentSource.self, from: json)
+        if case .inline(let target, let content) = source {
+            XCTAssertEqual(target, "/workspace/main.py")
+            XCTAssertEqual(content, "print('hello')")
+        } else { XCTFail("Expected .inline") }
+    }
+
+    func testEnvironmentSourceUnknownTypeThrows() {
+        let json = """
+        {"type": "unknown_source_type", "target": "/path"}
+        """.data(using: .utf8)!
+        XCTAssertThrowsError(try decoder.decode(EnvironmentSource.self, from: json))
+    }
+
+    func testEnvironmentConfigDecoding() throws {
+        let json = """
+        {
+            "type": "remote",
+            "sources": [{"type": "inline", "target": "/main.py", "content": "x = 1"}],
+            "network": "disabled"
+        }
+        """.data(using: .utf8)!
+        let env = try decoder.decode(EnvironmentConfig.self, from: json)
+        XCTAssertEqual(env.sources?.count, 1)
+        if case .disabled = env.network { } else { XCTFail("Expected .disabled network") }
+    }
 }
