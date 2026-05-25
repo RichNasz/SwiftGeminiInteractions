@@ -17,7 +17,10 @@ final class IntegrationTests: XCTestCase {
     }
 
     private func skipIfNoKey() throws {
-        try XCTSkipIf(apiKey == nil, "GEMINI_API_KEY not set — skipping integration test")
+        let hasKey = ProcessInfo.processInfo.environment["GEMINI_API_KEY"] != nil
+        let optedIn = ProcessInfo.processInfo.environment["RUN_INTEGRATION_TESTS"] == "1"
+        try XCTSkipIf(!hasKey || !optedIn,
+            "Set GEMINI_API_KEY and RUN_INTEGRATION_TESTS=1 to run integration tests")
     }
 
     func testLiveSendRoundTrip() async throws {
