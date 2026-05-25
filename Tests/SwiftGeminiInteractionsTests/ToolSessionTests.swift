@@ -155,11 +155,12 @@ final class ToolSessionTests: XCTestCase {
     }
 
     func testStreamYieldsToolCallEvents() async throws {
-        var callCount = 0
+        final class Counter: @unchecked Sendable { var value = 0 }
+        let counter = Counter()
         MockURLProtocol.requestHandler = { request in
-            callCount += 1
+            counter.value += 1
             let payload: String
-            if callCount == 1 {
+            if counter.value == 1 {
                 // First: requires_action — SSE with function_call
                 payload = """
                 data: {"event_type": "step.start", "index": 0, "step_type": "function_call"}
