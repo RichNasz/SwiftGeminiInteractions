@@ -126,6 +126,84 @@ final class ToolSessionTests: XCTestCase {
         XCTAssertEqual(bodyBox.value?["store"] as? Bool, true)
     }
 
+    func testStreamYieldsIterationStartedAndLLMEvents() async throws {
+        let ssePayload = """
+        data: {"event_type": "step.start", "index": 0, "step_type": "model_output"}
+
+        data: {"event_type": "step.delta", "index": 0, "delta": {"type": "text", "text": "Done"}}
+
+        data: {"event_type": "step.stop", "index": 0}
+
+        data: {"event_type": "interaction.completed", "interaction": {"id": "v1_s", "object": "interaction", "model": "gemini-3-flash-preview", "status": "completed", "created": "2026-05-24T10:00:00Z", "steps": [{"type":"model_output","content":[{"type":"text","text":"Done"}]}]}}
+
+        """.data(using: .utf8)!
+
+        MockURLProtocol.requestHandler = { request in
+            let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+            return (response, ssePayload)
+        }
+        let client = makeTestClient()
+        let session = ToolSession(client: client, tools: [], handlers: [:], maxIterations: 5)
+        var events: [ToolSessionEvent] = []
+        for try await event in session.stream(model: "gemini-3-flash-preview", input: [User("Hi")], configParams: []) {
+            events.append(event)
+        }
+        if case .iterationStarted(let n) = events.first { XCTAssertEqual(n, 1) }
+        else { XCTFail("First event should be iterationStarted(1)") }
+        let llmEvents = events.compactMap { if case .llm(let e) = $0 { return e }; return nil }
+        XCTAssertFalse(llmEvents.isEmpty)
+    }
+
+    func testStreamYieldsToolCallEvents() async throws {
+        var callCount = 0
+        MockURLProtocol.requestHandler = { request in
+            callCount += 1
+            let payload: String
+            if callCount == 1 {
+                // First: requires_action — SSE with function_call
+                payload = """
+                data: {"event_type": "step.start", "index": 0, "step_type": "function_call"}
+
+                data: {"event_type": "step.delta", "index": 0, "delta": {"type": "function_call_arguments", "delta": "{\\"msg\\":\\"hi\\"}", "call_id": "call-1"}}
+
+                data: {"event_type": "step.stop", "index": 0}
+
+                data: {"event_type": "interaction.completed", "interaction": {"id": "v1_1", "object": "interaction", "model": "gemini-3-flash-preview", "status": "requires_action", "created": "2026-05-24T10:00:00Z", "steps": [{"type":"function_call","id":"call-1","name":"echo","arguments":"{\\"msg\\":\\"hi\\"}"}]}}
+
+                """
+            } else {
+                // Second: completed
+                payload = """
+                data: {"event_type": "interaction.completed", "interaction": {"id": "v1_2", "object": "interaction", "model": "gemini-3-flash-preview", "status": "completed", "created": "2026-05-24T10:00:00Z", "steps": [{"type":"model_output","content":[{"type":"text","text":"echo: hi"}]}]}}
+
+                """
+            }
+            let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+            return (response, payload.data(using: .utf8)!)
+        }
+        let client = makeTestClient()
+        let session = ToolSession(
+            client: client,
+            tools: [.function(name: "echo", description: "echoes", parameters: .object(properties: [], required: []))],
+            handlers: ["echo": { args in
+                let d = try JSONDecoder().decode([String: String].self, from: args.data(using: .utf8)!)
+                return "echo: \(d["msg"] ?? "")"
+            }],
+            maxIterations: 5
+        )
+        var toolStarted = false
+        var toolCompleted = false
+        for try await event in session.stream(model: "gemini-3-flash-preview", input: [User("Hi")], configParams: []) {
+            if case .toolCallStarted = event { toolStarted = true }
+            if case .toolCallCompleted(_, _, let output, _) = event {
+                toolCompleted = true
+                XCTAssertEqual(output, "echo: hi")
+            }
+        }
+        XCTAssertTrue(toolStarted)
+        XCTAssertTrue(toolCompleted)
+    }
+
     func testRunChainsViaPreviousInteractionId() async throws {
         final class RequestLog: @unchecked Sendable {
             var bodies: [[String: Any]] = []

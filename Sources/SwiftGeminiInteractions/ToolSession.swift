@@ -199,6 +199,116 @@ public struct ToolSession: Sendable {
         }
     }
 
+    /// Stream the tool-calling loop: yields iteration/tool events and all SSE events from each LLM call.
+    public func stream(
+        model: String,
+        input: [Step],
+        configParams: [any InteractionConfigParameter]
+    ) -> AsyncThrowingStream<ToolSessionEvent, Error> {
+        AsyncThrowingStream { continuation in
+            Task {
+                do {
+                    var currentInput = input
+                    var currentPreviousId: String? = nil
+                    var iteration = 0
+
+                    while iteration < maxIterations {
+                        iteration += 1
+                        continuation.yield(.iterationStarted(iteration))
+
+                        let request = buildRequest(
+                            model: model,
+                            input: currentInput,
+                            previousId: currentPreviousId,
+                            configParams: configParams
+                        )
+
+                        // Forward all SSE events; collect the completed interaction
+                        var completedInteraction: Interaction? = nil
+                        for try await event in client.stream(request) {
+                            continuation.yield(.llm(event))
+                            if case .interactionCompleted(let interaction) = event {
+                                completedInteraction = interaction
+                                if let usage = interaction.usage {
+                                    continuation.yield(.usageUpdate(usage, iteration: iteration))
+                                }
+                            }
+                        }
+
+                        guard let interaction = completedInteraction else { break }
+
+                        // Collect function calls from the completed interaction's steps
+                        let functionCalls: [(index: Int, id: String, name: String, arguments: String)] = interaction.steps
+                            .enumerated()
+                            .compactMap { (idx, step) in
+                                if case .functionCall(let id, let name, let args) = step {
+                                    return (index: idx, id: id, name: name, arguments: args)
+                                }
+                                return nil
+                            }
+
+                        // If terminal status or no function calls, we're done
+                        if functionCalls.isEmpty || interaction.isComplete {
+                            continuation.finish()
+                            return
+                        }
+
+                        // Execute handlers in parallel
+                        struct StreamToolResult {
+                            let index: Int
+                            let callId: String
+                            let name: String
+                            let output: String
+                            let isError: Bool
+                            let duration: Duration
+                        }
+
+                        let results: [StreamToolResult] = try await withThrowingTaskGroup(of: StreamToolResult.self) { group in
+                            for call in functionCalls {
+                                let handler = handlers[call.name]
+                                group.addTask {
+                                    continuation.yield(.toolCallStarted(callId: call.id, name: call.name, arguments: call.arguments))
+                                    let clock = ContinuousClock()
+                                    let start = clock.now
+                                    let output: String
+                                    let isError: Bool
+                                    if let handler {
+                                        do {
+                                            output = try await handler(call.arguments)
+                                            isError = false
+                                        } catch {
+                                            output = "Error: \(String(describing: error))"
+                                            isError = true
+                                        }
+                                    } else {
+                                        output = "Error: No handler registered for tool '\(call.name)'"
+                                        isError = true
+                                    }
+                                    let duration = clock.now - start
+                                    continuation.yield(.toolCallCompleted(callId: call.id, name: call.name, output: output, duration: duration))
+                                    return StreamToolResult(index: call.index, callId: call.id, name: call.name, output: output, isError: isError, duration: duration)
+                                }
+                            }
+                            var collected: [StreamToolResult] = []
+                            for try await r in group { collected.append(r) }
+                            return collected.sorted { $0.index < $1.index }
+                        }
+
+                        // Build next input from function results in original order
+                        currentInput = results.map { r in
+                            FunctionOutput(callId: r.callId, result: r.output, isError: r.isError)
+                        }
+                        currentPreviousId = interaction.id
+                    }
+
+                    throw GeminiInteractionsError.maxIterationsExceeded(maxIterations)
+                } catch {
+                    continuation.finish(throwing: error)
+                }
+            }
+        }
+    }
+
     // MARK: - Private helpers
 
     private func buildRequest(
