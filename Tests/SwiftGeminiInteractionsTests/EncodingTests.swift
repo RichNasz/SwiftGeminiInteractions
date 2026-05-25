@@ -165,4 +165,43 @@ final class EncodingTests: XCTestCase {
         XCTAssertNotNil(lat)
         XCTAssertEqual(lat ?? 0.0, 37.7749, accuracy: 0.0001)
     }
+
+    func testInteractionInputTextEncoding() throws {
+        let input = InteractionInput.text("Hello!")
+        let data = try encoder.encode(input)
+        let str = String(data: data, encoding: .utf8)!
+        XCTAssertEqual(str, "\"Hello!\"")
+    }
+
+    func testInteractionInputStepsEncoding() throws {
+        let input = InteractionInput.steps([.userInput(content: [.text("Hi", annotations: nil)])])
+        let data = try encoder.encode(input)
+        let arr = try JSONSerialization.jsonObject(with: data) as? [[String: Any]]
+        XCTAssertNotNil(arr)
+        XCTAssertEqual(arr?.first?["type"] as? String, "user_input")
+    }
+
+    func testGenerationConfigEncoding() throws {
+        let config = GenerationConfig(temperature: 0.7, topP: 0.9, maxOutputTokens: 1024,
+                                       seed: nil, stopSequences: nil, thinkingLevel: .medium,
+                                       thinkingSummaries: nil, toolChoice: nil)
+        let data = try encoder.encode(config)
+        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        if let temp = json["temperature"] as? Double {
+            XCTAssertEqual(temp, 0.7, accuracy: 0.001)
+        }
+        XCTAssertEqual(json["max_output_tokens"] as? Int, 1024)
+        XCTAssertEqual(json["thinking_level"] as? String, "medium")
+    }
+
+    func testInteractionRequestEncoding() throws {
+        var request = InteractionRequest(input: .text("Hello"))
+        request.model = "gemini-3-flash-preview"
+        request.store = true
+        let data = try encoder.encode(request)
+        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        XCTAssertEqual(json["model"] as? String, "gemini-3-flash-preview")
+        XCTAssertEqual(json["store"] as? Bool, true)
+        XCTAssertNotNil(json["input"])
+    }
 }

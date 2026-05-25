@@ -606,6 +606,105 @@ public extension InteractionTool {
     }
 }
 
+// MARK: - InteractionInput
+
+public enum InteractionInput: Codable, Sendable {
+    case text(String)
+    case steps([Step])
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if let text = try? container.decode(String.self) {
+            self = .text(text)
+        } else {
+            self = .steps(try container.decode([Step].self))
+        }
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.singleValueContainer()
+        switch self {
+        case .text(let t):   try container.encode(t)
+        case .steps(let s):  try container.encode(s)
+        }
+    }
+}
+
+// MARK: - GenerationConfig
+
+public struct GenerationConfig: Codable, Sendable {
+    public var temperature: Double?
+    public var topP: Double?
+    public var maxOutputTokens: Int?
+    public var seed: Int?
+    public var stopSequences: [String]?
+    public var thinkingLevel: ThinkingLevel?
+    public var thinkingSummaries: ThinkingSummaries?
+    public var toolChoice: ToolChoiceConfig?
+
+    public init(
+        temperature: Double? = nil, topP: Double? = nil, maxOutputTokens: Int? = nil,
+        seed: Int? = nil, stopSequences: [String]? = nil, thinkingLevel: ThinkingLevel? = nil,
+        thinkingSummaries: ThinkingSummaries? = nil, toolChoice: ToolChoiceConfig? = nil
+    ) {
+        self.temperature = temperature; self.topP = topP; self.maxOutputTokens = maxOutputTokens
+        self.seed = seed; self.stopSequences = stopSequences; self.thinkingLevel = thinkingLevel
+        self.thinkingSummaries = thinkingSummaries; self.toolChoice = toolChoice
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case temperature, seed
+        case topP              = "top_p"
+        case maxOutputTokens   = "max_output_tokens"
+        case stopSequences     = "stop_sequences"
+        case thinkingLevel     = "thinking_level"
+        case thinkingSummaries = "thinking_summaries"
+        case toolChoice        = "tool_choice"
+    }
+}
+
+// MARK: - Stubs for InteractionRequest dependencies
+
+public struct ResponseFormat: Codable, Sendable {}
+public struct EnvironmentConfig: Codable, Sendable {}
+public struct WebhookConfig: Codable, Sendable {}
+
+// MARK: - InteractionRequest
+
+public struct InteractionRequest: Codable, Sendable {
+    public var model: String?
+    public var agent: String?
+    public var input: InteractionInput
+    public var systemInstruction: String?
+    public var tools: [InteractionTool]?
+    public var stream: Bool?
+    public var store: Bool?
+    public var background: Bool?
+    public var generationConfig: GenerationConfig?
+    public var responseFormat: ResponseFormat?
+    public var responseModalities: [ResponseModality]?
+    public var previousInteractionId: String?
+    public var environment: EnvironmentConfig?
+    public var webhookConfig: WebhookConfig?
+    public var serviceTier: ServiceTier?
+
+    public init(input: InteractionInput) {
+        self.input = input
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case model, agent, input, tools, stream, store, background
+        case systemInstruction   = "system_instruction"
+        case generationConfig    = "generation_config"
+        case responseFormat      = "response_format"
+        case responseModalities  = "response_modalities"
+        case previousInteractionId = "previous_interaction_id"
+        case environment
+        case webhookConfig       = "webhook_config"
+        case serviceTier         = "service_tier"
+    }
+}
+
 // MARK: - Usage
 
 public struct Usage: Codable, Sendable {
