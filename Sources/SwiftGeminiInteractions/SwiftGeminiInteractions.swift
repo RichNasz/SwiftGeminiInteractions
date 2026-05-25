@@ -1052,3 +1052,147 @@ public func User(_ content: [Content]) -> Step {
 public func FunctionOutput(callId: String, result: String, isError: Bool = false) -> Step {
     .functionResult(callId: callId, result: result, name: nil, isError: isError)
 }
+
+// MARK: - InteractionConfigParameter
+
+public protocol InteractionConfigParameter: Sendable {
+    func apply(to request: inout InteractionRequest)
+}
+
+private extension InteractionRequest {
+    mutating func ensureGenerationConfig() {
+        if generationConfig == nil { generationConfig = GenerationConfig() }
+    }
+}
+
+public struct Temperature: InteractionConfigParameter {
+    private let value: Double
+    public init(_ value: Double) { self.value = value }
+    public func apply(to request: inout InteractionRequest) {
+        guard value >= 0.0, value <= 2.0 else { return }
+        request.ensureGenerationConfig()
+        request.generationConfig!.temperature = value
+    }
+}
+
+public struct TopP: InteractionConfigParameter {
+    private let value: Double
+    public init(_ value: Double) { self.value = value }
+    public func apply(to request: inout InteractionRequest) {
+        guard value >= 0.0, value <= 1.0 else { return }
+        request.ensureGenerationConfig()
+        request.generationConfig!.topP = value
+    }
+}
+
+public struct MaxOutputTokens: InteractionConfigParameter {
+    private let value: Int
+    public init(_ value: Int) { self.value = value }
+    public func apply(to request: inout InteractionRequest) {
+        guard value > 0 else { return }
+        request.ensureGenerationConfig()
+        request.generationConfig!.maxOutputTokens = value
+    }
+}
+
+public struct Seed: InteractionConfigParameter {
+    private let value: Int
+    public init(_ value: Int) { self.value = value }
+    public func apply(to request: inout InteractionRequest) {
+        request.ensureGenerationConfig()
+        request.generationConfig!.seed = value
+    }
+}
+
+public struct SystemInstruction: InteractionConfigParameter {
+    private let value: String
+    public init(_ value: String) { self.value = value }
+    public func apply(to request: inout InteractionRequest) {
+        guard !value.isEmpty else { return }
+        request.systemInstruction = value
+    }
+}
+
+public struct PreviousInteractionId: InteractionConfigParameter {
+    private let value: String
+    public init(_ value: String) { self.value = value }
+    public func apply(to request: inout InteractionRequest) {
+        guard !value.isEmpty else { return }
+        request.previousInteractionId = value
+    }
+}
+
+public struct Store: InteractionConfigParameter {
+    private let value: Bool
+    public init(_ value: Bool) { self.value = value }
+    public func apply(to request: inout InteractionRequest) { request.store = value }
+}
+
+public struct Background: InteractionConfigParameter {
+    private let value: Bool
+    public init(_ value: Bool) { self.value = value }
+    public func apply(to request: inout InteractionRequest) { request.background = value }
+}
+
+public struct ServiceTierParam: InteractionConfigParameter {
+    private let value: ServiceTier
+    public init(_ value: ServiceTier) { self.value = value }
+    public func apply(to request: inout InteractionRequest) { request.serviceTier = value }
+}
+
+public struct ThinkingLevelParam: InteractionConfigParameter {
+    private let value: ThinkingLevel
+    public init(_ value: ThinkingLevel) { self.value = value }
+    public func apply(to request: inout InteractionRequest) {
+        request.ensureGenerationConfig()
+        request.generationConfig!.thinkingLevel = value
+    }
+}
+
+public struct ThinkingSummariesParam: InteractionConfigParameter {
+    private let value: ThinkingSummaries
+    public init(_ value: ThinkingSummaries) { self.value = value }
+    public func apply(to request: inout InteractionRequest) {
+        request.ensureGenerationConfig()
+        request.generationConfig!.thinkingSummaries = value
+    }
+}
+
+public struct ResponseFormatParam: InteractionConfigParameter {
+    private let value: ResponseFormat
+    public init(_ value: ResponseFormat) { self.value = value }
+    public func apply(to request: inout InteractionRequest) { request.responseFormat = value }
+}
+
+public struct ResponseModalitiesParam: InteractionConfigParameter {
+    private let value: [ResponseModality]
+    public init(_ value: [ResponseModality]) { self.value = value }
+    public func apply(to request: inout InteractionRequest) {
+        guard !value.isEmpty else { return }
+        request.responseModalities = value
+    }
+}
+
+public struct MaxToolCalls: InteractionConfigParameter {
+    let value: Int
+    public init(_ value: Int) { self.value = value }
+    public func apply(to request: inout InteractionRequest) { /* consumed by ToolSession */ }
+}
+
+public struct EnvironmentParam: InteractionConfigParameter {
+    private let value: EnvironmentConfig
+    public init(_ value: EnvironmentConfig) { self.value = value }
+    public func apply(to request: inout InteractionRequest) { request.environment = value }
+}
+
+public struct RequestTimeout: InteractionConfigParameter {
+    let value: TimeInterval
+    public init(_ value: TimeInterval) { self.value = value }
+    public func apply(to request: inout InteractionRequest) { /* consumed by client */ }
+}
+
+public struct WebhookConfigParam: InteractionConfigParameter {
+    private let value: WebhookConfig
+    public init(_ value: WebhookConfig) { self.value = value }
+    public func apply(to request: inout InteractionRequest) { request.webhookConfig = value }
+}
