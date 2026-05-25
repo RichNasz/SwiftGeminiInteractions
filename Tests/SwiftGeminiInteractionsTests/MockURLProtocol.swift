@@ -33,6 +33,24 @@ func makeTestClient(apiKey: String = "test-key", apiRevision: String = "2026-05-
     return InteractionsClient(apiKey: apiKey, apiRevision: apiRevision, session: session)
 }
 
+/// Reads the body from a URLRequest, handling both httpBody and httpBodyStream.
+func requestBodyData(from request: URLRequest) -> Data? {
+    if let body = request.httpBody { return body }
+    guard let stream = request.httpBodyStream else { return nil }
+    stream.open()
+    defer { stream.close() }
+    var data = Data()
+    let bufferSize = 4096
+    let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: bufferSize)
+    defer { buffer.deallocate() }
+    while stream.hasBytesAvailable {
+        let bytesRead = stream.read(buffer, maxLength: bufferSize)
+        if bytesRead > 0 { data.append(buffer, count: bytesRead) }
+        else { break }
+    }
+    return data.isEmpty ? nil : data
+}
+
 func makeInteractionJSON(id: String = "v1_test", status: String = "completed", model: String = "gemini-3-flash-preview") -> Data {
     """
     {
