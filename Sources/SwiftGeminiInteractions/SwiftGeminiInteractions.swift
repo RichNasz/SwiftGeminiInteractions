@@ -946,3 +946,62 @@ public struct Usage: Codable, Sendable {
         case inputTokensByModality = "input_tokens_by_modality"
     }
 }
+
+// MARK: - Interaction
+
+public struct Interaction: Codable, Sendable {
+    public let id: String
+    public let object: String
+    public let model: String?
+    public let agent: String?
+    public let status: InteractionStatus
+    public let created: String
+    public let updated: String?
+    public let steps: [Step]
+    public let usage: Usage?
+
+    public init(id: String, object: String = "interaction", model: String? = nil,
+                agent: String? = nil, status: InteractionStatus, created: String,
+                updated: String? = nil, steps: [Step] = [], usage: Usage? = nil) {
+        self.id = id
+        self.object = object
+        self.model = model
+        self.agent = agent
+        self.status = status
+        self.created = created
+        self.updated = updated
+        self.steps = steps
+        self.usage = usage
+    }
+
+    public var outputText: String? {
+        for step in steps.reversed() {
+            if case .modelOutput(let content) = step {
+                for item in content {
+                    if case .text(let text, _) = item { return text }
+                }
+            }
+        }
+        return nil
+    }
+
+    public var requiresAction: Bool { status == .requiresAction }
+
+    public var functionCalls: [Step] {
+        steps.filter { step in
+            if case .functionCall = step { return true }
+            return false
+        }
+    }
+
+    public var isComplete: Bool {
+        switch status {
+        case .completed, .failed, .cancelled, .incomplete, .budgetExceeded: return true
+        default: return false
+        }
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, object, model, agent, status, created, updated, steps, usage
+    }
+}

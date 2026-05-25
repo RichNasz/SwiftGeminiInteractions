@@ -289,4 +289,53 @@ final class DecodingTests: XCTestCase {
         XCTAssertEqual(env.sources?.count, 1)
         if case .disabled = env.network { } else { XCTFail("Expected .disabled network") }
     }
+
+    func testInteractionDecoding() throws {
+        let json = """
+        {
+            "id": "v1_abc123",
+            "object": "interaction",
+            "model": "gemini-3-flash-preview",
+            "status": "completed",
+            "created": "2026-05-24T10:00:00Z",
+            "steps": [
+                {"type": "user_input", "content": [{"type": "text", "text": "Hello"}]},
+                {"type": "model_output", "content": [{"type": "text", "text": "Hi there!"}]}
+            ],
+            "usage": {
+                "total_input_tokens": 5, "total_output_tokens": 10,
+                "total_thought_tokens": 0, "total_cached_tokens": 0,
+                "total_tool_use_tokens": 0, "total_tokens": 15,
+                "input_tokens_by_modality": []
+            }
+        }
+        """.data(using: .utf8)!
+        let interaction = try decoder.decode(Interaction.self, from: json)
+        XCTAssertEqual(interaction.id, "v1_abc123")
+        XCTAssertEqual(interaction.status, .completed)
+        XCTAssertEqual(interaction.steps.count, 2)
+        XCTAssertEqual(interaction.outputText, "Hi there!")
+        XCTAssertFalse(interaction.requiresAction)
+        XCTAssertTrue(interaction.isComplete)
+    }
+
+    func testInteractionRequiresActionConvenience() throws {
+        let json = """
+        {
+            "id": "v1_xyz",
+            "object": "interaction",
+            "model": "gemini-3-flash-preview",
+            "status": "requires_action",
+            "created": "2026-05-24T10:00:00Z",
+            "steps": [
+                {"type": "function_call", "id": "call-1", "name": "myFn", "arguments": "{}"}
+            ]
+        }
+        """.data(using: .utf8)!
+        let interaction = try decoder.decode(Interaction.self, from: json)
+        XCTAssertTrue(interaction.requiresAction)
+        XCTAssertFalse(interaction.isComplete)
+        XCTAssertEqual(interaction.functionCalls.count, 1)
+        XCTAssertNil(interaction.outputText)
+    }
 }
