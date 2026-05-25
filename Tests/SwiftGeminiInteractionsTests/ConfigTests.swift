@@ -99,5 +99,7 @@ final class ConfigTests: XCTestCase {
         }
         let tools = buildTools()
         XCTAssertEqual(tools.count, 2)
+        if case .googleSearch = tools[0] { } else { XCTFail("First tool should be .googleSearch") }
+        if case .function(let name, _, _) = tools[1] { XCTAssertEqual(name, "myFn") } else { XCTFail("Second tool should be .function") }
     }
 }
