@@ -173,6 +173,23 @@ public actor Agent {
                             configParams: configParams
                         ) {
                             continuation.yield(event)
+                            // Update agent state from streaming events
+                            switch event {
+                            case .toolCallStarted(_, let name, let args):
+                                self._transcript.append(.toolCall(name: name, arguments: args))
+                            case .toolCallCompleted(_, let name, let output, let duration):
+                                self._transcript.append(.toolResult(name: name, result: output, duration: duration))
+                            case .llm(let llmEvent):
+                                if case .interactionCompleted(let interaction) = llmEvent {
+                                    self._lastInteractionId = interaction.id
+                                    self._lastUsage = interaction.usage
+                                    if interaction.isComplete {
+                                        self._transcript.append(.assistantMessage(interaction.outputText ?? ""))
+                                    }
+                                }
+                            default:
+                                break
+                            }
                         }
                     }
                     continuation.finish()
@@ -231,8 +248,22 @@ public actor Agent {
         return request
     }
 
+    /// A private config param that routes named-agent requests correctly:
+    /// clears `model` and sets `agent` so ToolSession sends the right JSON field.
+    private struct AgentIdentifierParam: InteractionConfigParameter, Sendable {
+        let name: String
+        func apply(to request: inout InteractionRequest) {
+            request.agent = name
+            request.model = nil
+        }
+    }
+
     private func buildConfigParams() -> [any InteractionConfigParameter] {
         var params = configParams
+        // When using a named agent with ToolSession, override model → agent
+        if case .agent(let name) = modelIdentifier {
+            params.append(AgentIdentifierParam(name: name))
+        }
         if let id = _lastInteractionId {
             params.append(PreviousInteractionId(id))
             params.append(Store(true))
