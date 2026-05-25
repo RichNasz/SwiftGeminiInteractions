@@ -201,7 +201,6 @@ public struct ToolSession: Sendable {
     ) -> InteractionRequest {
         var request = InteractionRequest(input: .steps(input))
         request.model = model
-        request.store = true
         request.tools = tools.isEmpty ? nil : tools
         request.previousInteractionId = previousId
 
@@ -209,6 +208,7 @@ public struct ToolSession: Sendable {
             param.apply(to: &request)
         }
 
+        request.store = true
         return request
     }
 }
