@@ -5,6 +5,38 @@ import XCTest
 final class DecodingTests: XCTestCase {
     private let decoder = JSONDecoder()
 
+    func testTextContentDecoding() throws {
+        let json = """
+        {"type": "text", "text": "Hello world"}
+        """.data(using: .utf8)!
+        let content = try decoder.decode(Content.self, from: json)
+        if case .text(let text, _) = content {
+            XCTAssertEqual(text, "Hello world")
+        } else {
+            XCTFail("Expected .text case")
+        }
+    }
+
+    func testFileCitationDecoding() throws {
+        let json = """
+        {
+            "type": "file_citation",
+            "document_uri": "gs://bucket/file.pdf",
+            "file_name": "file.pdf",
+            "source": "upload",
+            "start_index": 0,
+            "end_index": 10
+        }
+        """.data(using: .utf8)!
+        let annotation = try decoder.decode(Annotation.self, from: json)
+        if case .fileCitation(let uri, let name, _, _, _, _) = annotation {
+            XCTAssertEqual(uri, "gs://bucket/file.pdf")
+            XCTAssertEqual(name, "file.pdf")
+        } else {
+            XCTFail("Expected .fileCitation case")
+        }
+    }
+
     func testUsageDecoding() throws {
         let json = """
         {

@@ -44,6 +44,32 @@ final class EncodingTests: XCTestCase {
         XCTAssertEqual((json["allowed_tools"] as? [String])?.first, "myTool")
     }
 
+    func testTextContentEncoding() throws {
+        let content = Content.text("Hello world", annotations: nil)
+        let data = try encoder.encode(content)
+        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        XCTAssertEqual(json["type"] as? String, "text")
+        XCTAssertEqual(json["text"] as? String, "Hello world")
+    }
+
+    func testImageContentEncoding() throws {
+        let imageData = Data([0xFF, 0xD8])
+        let content = Content.image(data: imageData, mimeType: "image/jpeg", uri: nil)
+        let data = try encoder.encode(content)
+        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        XCTAssertEqual(json["type"] as? String, "image")
+        XCTAssertEqual(json["mime_type"] as? String, "image/jpeg")
+        XCTAssertNotNil(json["data"])
+    }
+
+    func testUrlCitationEncoding() throws {
+        let annotation = Annotation.urlCitation(url: "https://example.com", title: "Example", startIndex: 0, endIndex: 5)
+        let data = try encoder.encode(annotation)
+        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        XCTAssertEqual(json["type"] as? String, "url_citation")
+        XCTAssertEqual(json["url"] as? String, "https://example.com")
+    }
+
     func testUsageEncoding() throws {
         let usage = Usage(
             totalInputTokens: 10,
