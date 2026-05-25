@@ -128,4 +128,41 @@ final class EncodingTests: XCTestCase {
         XCTAssertEqual(json["type"] as? String, "google_search_call")
         XCTAssertEqual(json["id"] as? String, "search-1")
     }
+
+    func testFunctionToolEncoding() throws {
+        let schema = JSONSchemaValue.object(properties: [("x", .number())], required: [])
+        let tool = InteractionTool.function(name: "myFn", description: "Does something", parameters: schema)
+        let data = try encoder.encode(tool)
+        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        XCTAssertEqual(json["type"] as? String, "function")
+        XCTAssertEqual(json["name"] as? String, "myFn")
+        XCTAssertNotNil(json["parameters"])
+    }
+
+    func testGoogleSearchToolEncoding() throws {
+        let tool = InteractionTool.googleSearch
+        let data = try encoder.encode(tool)
+        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        XCTAssertEqual(json["type"] as? String, "google_search")
+        XCTAssertNil(json["name"])
+    }
+
+    func testFileSearchToolEncoding() throws {
+        let tool = InteractionTool.fileSearch(storeNames: ["myStore"], topK: 5, metadataFilter: nil)
+        let data = try encoder.encode(tool)
+        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        XCTAssertEqual(json["type"] as? String, "file_search")
+        XCTAssertEqual((json["file_search_store_names"] as? [String])?.first, "myStore")
+        XCTAssertEqual(json["top_k"] as? Int, 5)
+    }
+
+    func testGoogleMapsToolEncoding() throws {
+        let tool = InteractionTool.googleMaps(latitude: 37.7749, longitude: -122.4194, enableWidget: true)
+        let data = try encoder.encode(tool)
+        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        XCTAssertEqual(json["type"] as? String, "google_maps")
+        let lat = json["latitude"] as? Double
+        XCTAssertNotNil(lat)
+        XCTAssertEqual(lat ?? 0.0, 37.7749, accuracy: 0.0001)
+    }
 }

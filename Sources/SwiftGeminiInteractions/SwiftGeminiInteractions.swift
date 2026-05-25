@@ -1,6 +1,6 @@
 // Sources/SwiftGeminiInteractions/SwiftGeminiInteractions.swift
 import Foundation
-import SwiftLLMToolMacros
+@_exported import SwiftLLMToolMacros
 
 public enum InteractionStatus: String, Codable, Sendable {
     case inProgress     = "in_progress"
@@ -412,6 +412,201 @@ public enum Step: Codable, Sendable {
         }
     }
 }
+
+// MARK: - JSONSchemaValue decoding support (local, encoding-only upstream type)
+
+private func jsonSchemaValueFromAny(_ any: Any) throws -> JSONSchemaValue {
+    guard let dict = any as? [String: Any],
+          let typeStr = dict["type"] as? String else {
+        throw DecodingError.dataCorrupted(
+            DecodingError.Context(codingPath: [], debugDescription: "JSONSchemaValue must be a JSON object with a 'type' key")
+        )
+    }
+    switch typeStr {
+    case "object":
+        let propsDict = dict["properties"] as? [String: Any] ?? [:]
+        let required = dict["required"] as? [String] ?? []
+        let properties: [(String, JSONSchemaValue)] = try propsDict.map { key, value in
+            (key, try jsonSchemaValueFromAny(value))
+        }
+        return .object(properties: properties, required: required)
+    case "array":
+        guard let items = dict["items"] else {
+            return .array(items: .null)
+        }
+        return .array(items: try jsonSchemaValueFromAny(items))
+    case "string":
+        let description = dict["description"] as? String
+        let enumValues = dict["enum"] as? [String]
+        return .string(description: description, enumValues: enumValues)
+    case "integer":
+        let description = dict["description"] as? String
+        let minimum = dict["minimum"] as? Int
+        let maximum = dict["maximum"] as? Int
+        return .integer(description: description, minimum: minimum, maximum: maximum)
+    case "number":
+        let description = dict["description"] as? String
+        let minimum = dict["minimum"] as? Double
+        let maximum = dict["maximum"] as? Double
+        return .number(description: description, minimum: minimum, maximum: maximum)
+    case "boolean":
+        return .boolean(description: dict["description"] as? String)
+    case "null":
+        return .null
+    default:
+        throw DecodingError.dataCorrupted(
+            DecodingError.Context(codingPath: [], debugDescription: "Unknown JSONSchemaValue type: \(typeStr)")
+        )
+    }
+}
+
+private struct JSONSchemaValueWrapper: Decodable {
+    let value: JSONSchemaValue
+
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        // Decode as raw JSON via a Dictionary<String, AnyCodingValue>
+        let raw = try container.decode(RawJSON.self)
+        self.value = try jsonSchemaValueFromAny(raw.any)
+    }
+}
+
+private struct RawJSON: Decodable {
+    let any: Any
+
+    init(from decoder: any Decoder) throws {
+        if var container = try? decoder.unkeyedContainer() {
+            var result: [Any] = []
+            while !container.isAtEnd {
+                let element = try container.decode(RawJSON.self)
+                result.append(element.any)
+            }
+            self.any = result
+        } else if let container = try? decoder.container(keyedBy: RawJSONKey.self) {
+            var result: [String: Any] = [:]
+            for key in container.allKeys {
+                let value = try container.decode(RawJSON.self, forKey: key)
+                result[key.stringValue] = value.any
+            }
+            self.any = result
+        } else {
+            let container = try decoder.singleValueContainer()
+            if let bool = try? container.decode(Bool.self) {
+                self.any = bool
+            } else if let int = try? container.decode(Int.self) {
+                self.any = int
+            } else if let double = try? container.decode(Double.self) {
+                self.any = double
+            } else if let string = try? container.decode(String.self) {
+                self.any = string
+            } else if container.decodeNil() {
+                self.any = NSNull()
+            } else {
+                throw DecodingError.dataCorrupted(
+                    DecodingError.Context(codingPath: container.codingPath, debugDescription: "Cannot decode RawJSON value")
+                )
+            }
+        }
+    }
+}
+
+private struct RawJSONKey: CodingKey {
+    var stringValue: String
+    var intValue: Int? { nil }
+    init(stringValue: String) { self.stringValue = stringValue }
+    init?(intValue: Int) { return nil }
+}
+
+// MARK: - InteractionTool
+
+public enum InteractionTool: Codable, Sendable {
+    case function(name: String, description: String, parameters: JSONSchemaValue)
+    case codeExecution
+    case googleSearch
+    case urlContext
+    case fileSearch(storeNames: [String], topK: Int?, metadataFilter: String?)
+    case googleMaps(latitude: Double, longitude: Double, enableWidget: Bool?)
+    case mcpServer
+
+    private enum CodingKeys: String, CodingKey {
+        case type, name, description, parameters
+        case storeNames     = "file_search_store_names"
+        case topK           = "top_k"
+        case metadataFilter = "metadata_filter"
+        case latitude, longitude
+        case enableWidget   = "enable_widget"
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let type = try container.decode(String.self, forKey: .type)
+        switch type {
+        case "function":
+            let wrapper = try container.decode(JSONSchemaValueWrapper.self, forKey: .parameters)
+            self = .function(
+                name: try container.decode(String.self, forKey: .name),
+                description: try container.decode(String.self, forKey: .description),
+                parameters: wrapper.value
+            )
+        case "code_execution": self = .codeExecution
+        case "google_search":  self = .googleSearch
+        case "url_context":    self = .urlContext
+        case "mcp_server":     self = .mcpServer
+        case "file_search":
+            self = .fileSearch(
+                storeNames: try container.decode([String].self, forKey: .storeNames),
+                topK: try container.decodeIfPresent(Int.self, forKey: .topK),
+                metadataFilter: try container.decodeIfPresent(String.self, forKey: .metadataFilter)
+            )
+        case "google_maps":
+            self = .googleMaps(
+                latitude: try container.decode(Double.self, forKey: .latitude),
+                longitude: try container.decode(Double.self, forKey: .longitude),
+                enableWidget: try container.decodeIfPresent(Bool.self, forKey: .enableWidget)
+            )
+        default:
+            throw DecodingError.dataCorruptedError(forKey: .type, in: container, debugDescription: "Unknown tool type: \(type)")
+        }
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        switch self {
+        case .function(let name, let description, let parameters):
+            try container.encode("function", forKey: .type)
+            try container.encode(name, forKey: .name)
+            try container.encode(description, forKey: .description)
+            try container.encode(parameters, forKey: .parameters)
+        case .codeExecution: try container.encode("code_execution", forKey: .type)
+        case .googleSearch:  try container.encode("google_search", forKey: .type)
+        case .urlContext:    try container.encode("url_context", forKey: .type)
+        case .mcpServer:     try container.encode("mcp_server", forKey: .type)
+        case .fileSearch(let storeNames, let topK, let metadataFilter):
+            try container.encode("file_search", forKey: .type)
+            try container.encode(storeNames, forKey: .storeNames)
+            try container.encodeIfPresent(topK, forKey: .topK)
+            try container.encodeIfPresent(metadataFilter, forKey: .metadataFilter)
+        case .googleMaps(let lat, let lon, let widget):
+            try container.encode("google_maps", forKey: .type)
+            try container.encode(lat, forKey: .latitude)
+            try container.encode(lon, forKey: .longitude)
+            try container.encodeIfPresent(widget, forKey: .enableWidget)
+        }
+    }
+}
+
+public extension InteractionTool {
+    /// Creates a `.function` tool from a `ToolDefinition` produced by the `@LLMTool` macro.
+    init(_ definition: ToolDefinition) {
+        self = .function(
+            name: definition.name,
+            description: definition.description,
+            parameters: definition.parameters
+        )
+    }
+}
+
+// MARK: - Usage
 
 public struct Usage: Codable, Sendable {
     public let totalInputTokens: Int
