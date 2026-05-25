@@ -57,8 +57,13 @@ final class EncodingTests: XCTestCase {
         let data = try encoder.encode(usage)
         let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
         XCTAssertEqual(json["total_input_tokens"] as? Int, 10)
+        XCTAssertEqual(json["total_output_tokens"] as? Int, 20)
+        XCTAssertEqual(json["total_thought_tokens"] as? Int, 5)
+        XCTAssertEqual(json["total_cached_tokens"] as? Int, 0)
+        XCTAssertEqual(json["total_tool_use_tokens"] as? Int, 3)
         XCTAssertEqual(json["total_tokens"] as? Int, 38)
         let modalities = json["input_tokens_by_modality"] as? [[String: Any]]
         XCTAssertEqual(modalities?.first?["modality"] as? String, "text")
+        XCTAssertEqual(modalities?.first?["tokens"] as? Int, 10)
     }
 }
