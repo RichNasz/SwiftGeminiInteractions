@@ -43,4 +43,22 @@ final class EncodingTests: XCTestCase {
         XCTAssertEqual(json["mode"] as? String, "auto")
         XCTAssertEqual((json["allowed_tools"] as? [String])?.first, "myTool")
     }
+
+    func testUsageEncoding() throws {
+        let usage = Usage(
+            totalInputTokens: 10,
+            totalOutputTokens: 20,
+            totalThoughtTokens: 5,
+            totalCachedTokens: 0,
+            totalToolUseTokens: 3,
+            totalTokens: 38,
+            inputTokensByModality: [ModalityTokens(modality: "text", tokens: 10)]
+        )
+        let data = try encoder.encode(usage)
+        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        XCTAssertEqual(json["total_input_tokens"] as? Int, 10)
+        XCTAssertEqual(json["total_tokens"] as? Int, 38)
+        let modalities = json["input_tokens_by_modality"] as? [[String: Any]]
+        XCTAssertEqual(modalities?.first?["modality"] as? String, "text")
+    }
 }
