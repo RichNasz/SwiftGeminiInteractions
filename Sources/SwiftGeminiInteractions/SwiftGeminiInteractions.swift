@@ -1362,7 +1362,10 @@ public actor InteractionsClient {
         while clock.now < deadline {
             let interaction = try await get(id: id)
             if interaction.isComplete { return interaction }
-            try await Task.sleep(for: interval)
+            let remaining = deadline - clock.now
+            if remaining > .zero {
+                try await Task.sleep(for: min(interval, remaining))
+            }
         }
         throw GeminiInteractionsError.pollTimeout(id: id)
     }

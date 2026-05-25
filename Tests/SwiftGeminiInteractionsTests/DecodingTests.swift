@@ -464,4 +464,24 @@ final class DecodingTests: XCTestCase {
             XCTFail("Wrong error type: \(error)")
         }
     }
+
+    func testPollReturnsOnFailed() async throws {
+        MockURLProtocol.requestHandler = { request in
+            let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+            return (response, makeInteractionJSON(status: "failed"))
+        }
+        let client = makeTestClient()
+        let interaction = try await client.poll(id: "v1_test", timeout: .seconds(5), interval: .milliseconds(100))
+        XCTAssertEqual(interaction.status, .failed)
+    }
+
+    func testPollReturnsOnBudgetExceeded() async throws {
+        MockURLProtocol.requestHandler = { request in
+            let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+            return (response, makeInteractionJSON(status: "budget_exceeded"))
+        }
+        let client = makeTestClient()
+        let interaction = try await client.poll(id: "v1_test", timeout: .seconds(5), interval: .milliseconds(100))
+        XCTAssertEqual(interaction.status, .budgetExceeded)
+    }
 }
