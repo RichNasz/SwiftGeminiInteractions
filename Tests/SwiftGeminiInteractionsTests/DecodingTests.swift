@@ -5,6 +5,11 @@ import XCTest
 final class DecodingTests: XCTestCase {
     private let decoder = JSONDecoder()
 
+    override func tearDown() {
+        MockURLProtocol.requestHandler = nil
+        super.tearDown()
+    }
+
     func testTextContentDecoding() throws {
         let json = """
         {"type": "text", "text": "Hello world"}
@@ -404,5 +409,21 @@ final class DecodingTests: XCTestCase {
         }
         let client = makeTestClient()
         try await client.cancel(id: "v1_test")  // should not throw
+    }
+
+    func testClientNetworkErrorWrapped() async {
+        MockURLProtocol.requestHandler = { _ in
+            throw URLError(.notConnectedToInternet)
+        }
+        let client = makeTestClient()
+        let request = InteractionRequest(input: .text("Hello"))
+        do {
+            _ = try await client.send(request)
+            XCTFail("Should have thrown networkError")
+        } catch GeminiInteractionsError.networkError {
+            // pass
+        } catch {
+            XCTFail("Wrong error type: \(error)")
+        }
     }
 }

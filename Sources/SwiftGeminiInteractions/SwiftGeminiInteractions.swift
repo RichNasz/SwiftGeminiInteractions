@@ -1247,7 +1247,7 @@ public actor InteractionsClient {
     private let apiKey: String
     private let apiRevision: String
     private let session: URLSession
-    let baseURL: URL
+    private let baseURL: URL
 
     public init(apiKey: String, apiRevision: String = "2026-05-20") {
         self.apiKey = apiKey
@@ -1274,8 +1274,7 @@ public actor InteractionsClient {
     private func headers() -> [String: String] {
         [
             "x-goog-api-key": apiKey,
-            "Api-Revision": apiRevision,
-            "Content-Type": "application/json"
+            "Api-Revision": apiRevision
         ]
     }
 
@@ -1285,6 +1284,9 @@ public actor InteractionsClient {
         urlRequest.httpBody = body
         for (key, value) in headers() {
             urlRequest.setValue(value, forHTTPHeaderField: key)
+        }
+        if body != nil {
+            urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
         }
         return urlRequest
     }
