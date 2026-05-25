@@ -426,4 +426,42 @@ final class DecodingTests: XCTestCase {
             XCTFail("Wrong error type: \(error)")
         }
     }
+
+    func testPollReturnsImmediatelyOnCompleted() async throws {
+        MockURLProtocol.requestHandler = { request in
+            let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+            return (response, makeInteractionJSON(status: "completed"))
+        }
+        let client = makeTestClient()
+        let interaction = try await client.poll(id: "v1_test", timeout: .seconds(5), interval: .milliseconds(100))
+        XCTAssertEqual(interaction.status, .completed)
+    }
+
+    func testPollReturnsOnCancelled() async throws {
+        MockURLProtocol.requestHandler = { request in
+            let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+            return (response, makeInteractionJSON(status: "cancelled"))
+        }
+        let client = makeTestClient()
+        let interaction = try await client.poll(id: "v1_test", timeout: .seconds(5), interval: .milliseconds(100))
+        XCTAssertEqual(interaction.status, .cancelled)
+    }
+
+    func testPollTimeoutThrows() async {
+        var callCount = 0
+        MockURLProtocol.requestHandler = { request in
+            callCount += 1
+            let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+            return (response, makeInteractionJSON(status: "in_progress"))
+        }
+        let client = makeTestClient()
+        do {
+            _ = try await client.poll(id: "v1_timeout", timeout: .milliseconds(200), interval: .milliseconds(50))
+            XCTFail("Should have thrown pollTimeout")
+        } catch GeminiInteractionsError.pollTimeout(let id) {
+            XCTAssertEqual(id, "v1_timeout")
+        } catch {
+            XCTFail("Wrong error type: \(error)")
+        }
+    }
 }

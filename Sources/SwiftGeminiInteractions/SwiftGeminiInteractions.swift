@@ -1351,4 +1351,19 @@ public actor InteractionsClient {
         let urlRequest = makeRequest(url: cancelURL, method: "POST")
         _ = try await execute(urlRequest)
     }
+
+    public func poll(
+        id: String,
+        timeout: Duration = .seconds(300),
+        interval: Duration = .seconds(5)
+    ) async throws -> Interaction {
+        let clock = ContinuousClock()
+        let deadline = clock.now + timeout
+        while clock.now < deadline {
+            let interaction = try await get(id: id)
+            if interaction.isComplete { return interaction }
+            try await Task.sleep(for: interval)
+        }
+        throw GeminiInteractionsError.pollTimeout(id: id)
+    }
 }
