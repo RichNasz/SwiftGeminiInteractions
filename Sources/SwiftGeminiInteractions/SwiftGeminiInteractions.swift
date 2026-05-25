@@ -2,6 +2,36 @@
 import Foundation
 @_exported import SwiftLLMToolMacros
 
+// MARK: - GeminiInteractionsError
+
+public enum GeminiInteractionsError: Error, LocalizedError, @unchecked Sendable {
+    case networkError(URLError)
+    case httpError(statusCode: Int, body: String)
+    case rateLimitExceeded
+    case decodingError(DecodingError)
+    case encodingError(EncodingError)
+    case invalidInput(String)
+    case toolExecutionFailed(name: String, error: any Error)
+    case maxIterationsExceeded(Int)
+    case pollTimeout(id: String)
+    case interactionFailed(id: String, status: InteractionStatus)
+
+    public var errorDescription: String? {
+        switch self {
+        case .networkError(let e):             return "Network error: \(e.localizedDescription)"
+        case .httpError(let code, let body):   return "HTTP \(code): \(body)"
+        case .rateLimitExceeded:               return "Rate limit exceeded. Retry after a short delay."
+        case .decodingError(let e):            return "Failed to decode response: \(e.localizedDescription)"
+        case .encodingError(let e):            return "Failed to encode request: \(e.localizedDescription)"
+        case .invalidInput(let msg):           return "Invalid input: \(msg)"
+        case .toolExecutionFailed(let name, let e): return "Tool '\(name)' failed: \(e.localizedDescription)"
+        case .maxIterationsExceeded(let n):    return "Exceeded maximum tool iterations (\(n))."
+        case .pollTimeout(let id):             return "Poll timed out for interaction '\(id)'."
+        case .interactionFailed(let id, let status): return "Interaction '\(id)' ended with status: \(status.rawValue)"
+        }
+    }
+}
+
 public enum InteractionStatus: String, Codable, Sendable {
     case inProgress     = "in_progress"
     case requiresAction = "requires_action"
@@ -1004,4 +1034,21 @@ public struct Interaction: Codable, Sendable {
     private enum CodingKeys: String, CodingKey {
         case id, object, model, agent, status, created, updated, steps, usage
     }
+}
+
+// MARK: - Convenience Constructors
+
+/// Creates a `.userInput` step with a single text content item.
+public func User(_ text: String) -> Step {
+    .userInput(content: [.text(text, annotations: nil)])
+}
+
+/// Creates a `.userInput` step with the given content array.
+public func User(_ content: [Content]) -> Step {
+    .userInput(content: content)
+}
+
+/// Creates a `.functionResult` step.
+public func FunctionOutput(callId: String, result: String, isError: Bool = false) -> Step {
+    .functionResult(callId: callId, result: result, name: nil, isError: isError)
 }

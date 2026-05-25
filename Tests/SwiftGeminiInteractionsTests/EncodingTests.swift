@@ -264,4 +264,33 @@ final class EncodingTests: XCTestCase {
         XCTAssertEqual((json["notification_endpoints"] as? [String])?.first, "https://example.com/hook")
         XCTAssertEqual((json["user_metadata"] as? [String: String])?["jobId"], "123")
     }
+
+    func testGeminiInteractionsErrorLocalizedDescription() {
+        let error = GeminiInteractionsError.rateLimitExceeded
+        XCTAssertFalse(error.errorDescription!.isEmpty)
+
+        let toolError = GeminiInteractionsError.toolExecutionFailed(name: "myFn", error: URLError(.badURL))
+        XCTAssertTrue(toolError.errorDescription!.contains("myFn"))
+
+        let maxIter = GeminiInteractionsError.maxIterationsExceeded(10)
+        XCTAssertTrue(maxIter.errorDescription!.contains("10"))
+
+        let timeout = GeminiInteractionsError.pollTimeout(id: "v1_abc")
+        XCTAssertTrue(timeout.errorDescription!.contains("v1_abc"))
+    }
+
+    func testConvenienceConstructors() throws {
+        let userStep = User("Hello!")
+        if case .userInput(let content) = userStep,
+           case .text(let text, _) = content.first {
+            XCTAssertEqual(text, "Hello!")
+        } else { XCTFail("User() should produce .userInput with text content") }
+
+        let resultStep = FunctionOutput(callId: "call-1", result: "42")
+        if case .functionResult(let callId, let result, _, let isError) = resultStep {
+            XCTAssertEqual(callId, "call-1")
+            XCTAssertEqual(result, "42")
+            XCTAssertEqual(isError, false)
+        } else { XCTFail("FunctionOutput() should produce .functionResult") }
+    }
 }
