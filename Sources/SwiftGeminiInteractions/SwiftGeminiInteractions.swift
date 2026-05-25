@@ -1174,7 +1174,7 @@ public struct ResponseModalitiesParam: InteractionConfigParameter {
 }
 
 public struct MaxToolCalls: InteractionConfigParameter {
-    let value: Int
+    public let value: Int
     public init(_ value: Int) { self.value = value }
     public func apply(to request: inout InteractionRequest) { /* consumed by ToolSession */ }
 }
@@ -1186,7 +1186,7 @@ public struct EnvironmentParam: InteractionConfigParameter {
 }
 
 public struct RequestTimeout: InteractionConfigParameter {
-    let value: TimeInterval
+    public let value: TimeInterval
     public init(_ value: TimeInterval) { self.value = value }
     public func apply(to request: inout InteractionRequest) { /* consumed by client */ }
 }

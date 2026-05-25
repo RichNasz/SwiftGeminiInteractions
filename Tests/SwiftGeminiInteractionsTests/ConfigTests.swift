@@ -13,8 +13,8 @@ final class ConfigTests: XCTestCase {
         let invalid = Temperature(-0.1)
         var r2 = InteractionRequest(input: .text("hi"))
         invalid.apply(to: &r2)
-        // Temperature below 0 should not apply (or clamps to 0)
-        XCTAssertNil(r2.generationConfig?.temperature)
+        // Temperature below 0 should not apply
+        XCTAssertNil(r2.generationConfig)
     }
 
     func testMaxOutputTokensApplies() {
