@@ -207,4 +207,39 @@ final class DecodingTests: XCTestCase {
             } else { XCTFail("Expected .object schema with count property") }
         } else { XCTFail("Expected .function") }
     }
+
+    func testTextResponseFormatDecoding() throws {
+        let json = """
+        {"type": "text", "mime_type": "application/json"}
+        """.data(using: .utf8)!
+        let format = try decoder.decode(ResponseFormat.self, from: json)
+        if case .text(let mimeType, _) = format {
+            XCTAssertEqual(mimeType, "application/json")
+        } else { XCTFail("Expected .text ResponseFormat") }
+    }
+
+    func testImageResponseFormatDecoding() throws {
+        let json = """
+        {"type": "image", "mime_type": "image/png", "aspect_ratio": "16:9", "delivery": "inline"}
+        """.data(using: .utf8)!
+        let format = try decoder.decode(ResponseFormat.self, from: json)
+        if case .image(let mimeType, let aspectRatio, _, let delivery) = format {
+            XCTAssertEqual(mimeType, "image/png")
+            XCTAssertEqual(aspectRatio, "16:9")
+            XCTAssertEqual(delivery, .inline)
+        } else { XCTFail("Expected .image ResponseFormat") }
+    }
+
+    func testAudioResponseFormatDecoding() throws {
+        let json = """
+        {"type": "audio", "mime_type": "audio/mp3", "sample_rate": 44100, "bit_rate": 128, "delivery": "uri"}
+        """.data(using: .utf8)!
+        let format = try decoder.decode(ResponseFormat.self, from: json)
+        if case .audio(let mimeType, let sampleRate, let bitRate, let delivery) = format {
+            XCTAssertEqual(mimeType, .mp3)
+            XCTAssertEqual(sampleRate, 44100)
+            XCTAssertEqual(bitRate, 128)
+            XCTAssertEqual(delivery, .uri)
+        } else { XCTFail("Expected .audio ResponseFormat") }
+    }
 }

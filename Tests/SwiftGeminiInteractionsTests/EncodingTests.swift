@@ -219,6 +219,7 @@ final class EncodingTests: XCTestCase {
         let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
         XCTAssertEqual(json["type"] as? String, "image")
         XCTAssertEqual(json["mime_type"] as? String, "image/png")
+        XCTAssertEqual(json["aspect_ratio"] as? String, "16:9")
         XCTAssertEqual(json["delivery"] as? String, "inline")
     }
 
@@ -229,5 +230,7 @@ final class EncodingTests: XCTestCase {
         XCTAssertEqual(json["type"] as? String, "audio")
         XCTAssertEqual(json["mime_type"] as? String, "audio/mp3")
         XCTAssertEqual(json["sample_rate"] as? Int, 44100)
+        XCTAssertEqual(json["bit_rate"] as? Int, 128)
+        XCTAssertEqual(json["delivery"] as? String, "uri")
     }
 }
