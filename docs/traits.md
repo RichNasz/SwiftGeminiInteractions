@@ -43,6 +43,16 @@ Traits add complexity — `#if` guards in source files, a `traits:` declaration 
 
 This matches the pattern used across the SwiftSynapse ecosystem: gate the large, optional orchestration layers; leave the small infrastructure always-on.
 
+### Guide Coverage by Trait
+
+| Feature | Guide | Required Trait |
+|---------|-------|----------------|
+| Client, send, get, delete, cancel | [Getting Started](getting-started.md) | None (always available) |
+| Streaming | [Streaming](streaming.md) | None (always available) |
+| Polling | [Background & Polling](background-and-polling.md) | None (always available) |
+| ToolSession | [Tools](tools.md) | `ToolSession` |
+| Agent | [Agent](agent.md) | `Agent` |
+
 ### Migration
 
 `Full` is the default trait. Existing consumers who upgrade from a version without traits will automatically get `Full` — no `Package.swift` changes required. Behavior is identical to before.
