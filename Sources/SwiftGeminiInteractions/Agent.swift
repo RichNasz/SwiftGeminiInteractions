@@ -5,16 +5,20 @@ import Foundation
 
 // MARK: - AgentTool
 
+/// Pairs an ``InteractionTool`` with a handler closure for use with ``Agent``.
 public struct AgentTool: Sendable {
+    /// The tool definition sent to the API.
     public let tool: InteractionTool
+    /// The closure that executes when the model calls this tool.
     public let handler: ToolSession.ToolHandler
 
+    /// Creates an `AgentTool` from a tool definition and handler closure.
     public init(tool: InteractionTool, handler: @escaping ToolSession.ToolHandler) {
         self.tool = tool
         self.handler = handler
     }
 
-    /// Convenience init for `LLMTool`-conforming types.
+    /// Creates an `AgentTool` from an `@LLMTool`-conforming type, extracting the tool definition and wrapping the `call` method as a handler.
     public init<T: LLMTool>(_ instance: T) {
         self.tool = InteractionTool(T.toolDefinition)
         self.handler = { args in
@@ -30,6 +34,7 @@ public struct AgentTool: Sendable {
 
 // MARK: - AgentToolBuilder
 
+/// Result builder for composing `[AgentTool]` arrays in ``Agent`` initializers.
 @resultBuilder
 public struct AgentToolBuilder {
     public static func buildBlock(_ components: [AgentTool]...) -> [AgentTool] {
@@ -50,13 +55,21 @@ public struct AgentToolBuilder {
 
 // MARK: - TranscriptEntry
 
+/// A log entry in an ``Agent``'s conversation transcript.
 public enum TranscriptEntry: Sendable {
+    /// A message sent by the user.
     case userMessage(String)
+    /// A text response from the model.
     case assistantMessage(String)
+    /// A model reasoning/thought step.
     case thought(String)
+    /// A function tool call issued by the model.
     case toolCall(name: String, arguments: String)
+    /// The result returned by a tool handler.
     case toolResult(name: String, result: String, duration: Duration)
+    /// A server-side built-in tool invocation.
     case builtInToolCall(type: String)
+    /// An error that occurred during the conversation.
     case error(String)
 }
 
@@ -67,6 +80,10 @@ private enum ModelIdentifier: Sendable {
     case agent(String)
 }
 
+/// A multi-turn conversational agent that wraps ``ToolSession`` with automatic interaction chaining, transcript tracking, and usage aggregation.
+///
+/// Use ``send(_:)`` for synchronous requests or ``stream(_:)`` for real-time event streaming.
+/// Both automatically chain interactions via `previousInteractionId`.
 public actor Agent {
     private let client: InteractionsClient
     private let modelIdentifier: ModelIdentifier
@@ -79,8 +96,11 @@ public actor Agent {
     private var _lastUsage: Usage?
     private var _transcript: [TranscriptEntry] = []
 
+    /// The ID of the most recent interaction in the chain.
     public var lastInteractionId: String? { _lastInteractionId }
+    /// Token usage from the most recent interaction.
     public var lastUsage: Usage? { _lastUsage }
+    /// The full conversation transcript.
     public var transcript: [TranscriptEntry] { _transcript }
 
     // MARK: - Initializers
@@ -125,7 +145,12 @@ public actor Agent {
 
     // MARK: - Public API
 
-    /// Send a message and return the model's output text.
+    /// Sends a message and returns the model's text output.
+    ///
+    /// Automatically chains to the previous interaction if one exists.
+    ///
+    /// - Parameter message: The user's message text.
+    /// - Returns: The model's text response.
     public func send(_ message: String) async throws -> String {
         _transcript.append(.userMessage(message))
         let interaction: Interaction
@@ -141,7 +166,10 @@ public actor Agent {
         return output
     }
 
-    /// Stream events from the model, yielding `ToolSessionEvent` values.
+    /// Streams a message, yielding ``ToolSessionEvent`` values in real time.
+    ///
+    /// - Parameter message: The user's message text.
+    /// - Returns: An async stream of events.
     public func stream(_ message: String) -> AsyncThrowingStream<ToolSessionEvent, Error> {
         AsyncThrowingStream { continuation in
             Task {
@@ -203,7 +231,7 @@ public actor Agent {
         }
     }
 
-    /// Reset conversation state: clears last interaction ID and transcript.
+    /// Resets the agent's conversation state — clears the interaction chain, transcript, and usage.
     public func reset() {
         _lastInteractionId = nil
         _lastUsage = nil

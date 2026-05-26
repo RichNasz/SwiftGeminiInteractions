@@ -4,6 +4,12 @@ import Foundation
 // MARK: - stream / resumeStream
 
 extension InteractionsClient {
+    /// Streams an interaction, yielding events as they arrive via Server-Sent Events.
+    ///
+    /// The request is automatically modified to set `stream: true` and `store: true`.
+    ///
+    /// - Parameter request: The interaction request to stream.
+    /// - Returns: An async stream of ``InteractionStreamEvent`` values.
     public nonisolated func stream(_ request: InteractionRequest) -> AsyncThrowingStream<InteractionStreamEvent, Error> {
         AsyncThrowingStream { continuation in
             Task {
@@ -53,6 +59,12 @@ extension InteractionsClient {
         }
     }
 
+    /// Resumes a previously interrupted stream from the last received event.
+    ///
+    /// - Parameters:
+    ///   - id: The interaction ID from the original stream.
+    ///   - lastEventId: The ID of the last event successfully processed.
+    /// - Returns: An async stream continuing from after the specified event.
     public nonisolated func resumeStream(
         id: String,
         lastEventId: String
@@ -106,15 +118,25 @@ extension InteractionsClient {
 
 // MARK: - InteractionStreamDelta
 
+/// An incremental content update within a streaming step.
 public enum InteractionStreamDelta: Sendable {
+    /// Incremental text content.
     case text(String)
+    /// Image data delivered as a complete chunk.
     case image(Data)
+    /// Incremental function call argument JSON.
     case functionCallArguments(delta: String, callId: String)
+    /// Incremental code execution argument JSON.
     case codeExecutionArguments(delta: String, id: String)
+    /// A Google Search query issued by the model.
     case googleSearchQuery(String)
+    /// A URL fetched by the URL context tool.
     case urlContextUrl(String)
+    /// A summary of the model's internal reasoning.
     case thoughtSummary(String)
+    /// An annotation (citation, URL, etc.) attached to the response.
     case annotation(Annotation)
+    /// An unrecognized delta type, preserved for forward compatibility.
     case unknown
 
     private enum CodingKeys: String, CodingKey {
@@ -157,14 +179,23 @@ public enum InteractionStreamDelta: Sendable {
 
 // MARK: - InteractionStreamEvent
 
+/// A streaming event from the Gemini Interactions API, delivered via Server-Sent Events.
 public enum InteractionStreamEvent: Codable, Sendable {
+    /// The interaction has been created on the server.
     case interactionCreated(Interaction)
+    /// The interaction's status changed (e.g. processing, completed).
     case interactionStatusUpdate(InteractionStatus)
+    /// A new step has started at the given index.
     case stepStart(stepType: String, index: Int)
+    /// An incremental delta within the step at `stepIndex`.
     case stepDelta(InteractionStreamDelta, stepIndex: Int)
+    /// The step at the given index has finished.
     case stepStop(index: Int)
+    /// The interaction is fully complete; includes the final ``Interaction``.
     case interactionCompleted(Interaction)
+    /// A server-side error message.
     case error(String)
+    /// An unrecognized event type, preserved for forward compatibility.
     case unknown
 
     private enum CodingKeys: String, CodingKey {

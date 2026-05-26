@@ -5,10 +5,15 @@ import Foundation
 
 // MARK: - ToolCallLogEntry
 
+/// A record of a single tool call during a ``ToolSession`` run.
 public struct ToolCallLogEntry: Sendable {
+    /// The tool name that was called.
     public let name: String
+    /// The JSON arguments passed to the tool handler.
     public let arguments: String
+    /// The handler's return value (or error string if it threw).
     public let result: String
+    /// Wall-clock time the handler took to execute.
     public let duration: Duration
 
     public init(name: String, arguments: String, result: String, duration: Duration) {
@@ -21,10 +26,15 @@ public struct ToolCallLogEntry: Sendable {
 
 // MARK: - ToolSessionResult
 
+/// The result of a complete ``ToolSession/run(model:input:configParams:)`` — includes the final interaction, iteration count, tool call log, and per-iteration usage.
 public struct ToolSessionResult: Sendable {
+    /// The final ``Interaction`` returned by the last LLM call.
     public let interaction: Interaction
+    /// Number of send-execute-chain iterations performed.
     public let iterations: Int
+    /// Chronological log of every tool call executed.
     public let log: [ToolCallLogEntry]
+    /// Token usage reported by the LLM for each iteration.
     public let iterationUsages: [Usage]
 
     public init(interaction: Interaction, iterations: Int, log: [ToolCallLogEntry], iterationUsages: [Usage]) {
@@ -34,7 +44,7 @@ public struct ToolSessionResult: Sendable {
         self.iterationUsages = iterationUsages
     }
 
-    /// Sum of token usage across all iterations (avoids double-counting by summing all elements).
+    /// Token usage summed across all iterations.
     public var totalUsage: Usage? {
         guard !iterationUsages.isEmpty else { return nil }
         return iterationUsages.dropFirst().reduce(into: iterationUsages[0]) { acc, usage in
@@ -55,17 +65,25 @@ public struct ToolSessionResult: Sendable {
 
 // MARK: - ToolSessionEvent
 
+/// Events yielded by ``ToolSession/stream(model:input:configParams:)`` — combines LLM streaming events with tool execution lifecycle.
 public enum ToolSessionEvent: Sendable {
+    /// A new tool-loop iteration has begun.
     case iterationStarted(Int)
+    /// A streaming event from the underlying LLM call.
     case llm(InteractionStreamEvent)
+    /// A tool handler is about to execute.
     case toolCallStarted(callId: String, name: String, arguments: String)
+    /// A tool handler has finished executing.
     case toolCallCompleted(callId: String, name: String, output: String, duration: Duration)
+    /// Token usage reported at the end of an iteration.
     case usageUpdate(Usage, iteration: Int)
 }
 
 // MARK: - ToolSession
 
+/// Runs an automatic tool-calling loop: send, check for function calls, execute handlers, chain results, repeat.
 public struct ToolSession: Sendable {
+    /// The type signature for tool handler closures.
     public typealias ToolHandler = @Sendable (String) async throws -> String
 
     private let client: InteractionsClient
@@ -85,7 +103,13 @@ public struct ToolSession: Sendable {
         self.maxIterations = maxIterations
     }
 
-    /// Run the tool-calling loop: send → check status → execute function calls in parallel → chain.
+    /// Runs the tool-calling loop synchronously (non-streaming).
+    ///
+    /// - Parameters:
+    ///   - model: The model identifier string.
+    ///   - input: Initial conversation steps.
+    ///   - configParams: Config parameters applied to each request.
+    /// - Returns: The final result including interaction, log, and usage.
     public func run(
         model: String,
         input: [Step],
@@ -201,7 +225,13 @@ public struct ToolSession: Sendable {
         }
     }
 
-    /// Stream the tool-calling loop: yields iteration/tool events and all SSE events from each LLM call.
+    /// Streams the tool-calling loop, yielding events for each iteration, tool call, and LLM event.
+    ///
+    /// - Parameters:
+    ///   - model: The model identifier string.
+    ///   - input: Initial conversation steps.
+    ///   - configParams: Config parameters applied to each request.
+    /// - Returns: An async stream of ``ToolSessionEvent`` values.
     public func stream(
         model: String,
         input: [Step],
