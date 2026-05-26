@@ -16,6 +16,25 @@ And to your target's dependencies:
 .product(name: "SwiftGeminiInteractions", package: "SwiftGeminiInteractions")
 ```
 
+### Traits
+
+By default you get all features. To reduce binary size, specify traits:
+
+| Traits | What you get |
+|--------|-------------|
+| _(none specified)_ | Everything — `ToolSession`, `Agent`, streaming, polling |
+| `["ToolSession"]` | Tool-calling loop, no `Agent` wrapper |
+| `[]` | Core client only — `send()`, `stream()`, `get()`, `delete()`, `cancel()`, `poll()` |
+
+```swift
+// Core only — no tool orchestration
+.package(url: "https://github.com/your-org/SwiftGeminiInteractions.git",
+         branch: "main",
+         traits: [])
+```
+
+See [docs/traits.md](docs/traits.md) for full details and design rationale.
+
 ## Quick Start
 
 ### Simple interaction
