@@ -66,6 +66,16 @@ final class IntegrationTests: XCTestCase {
         XCTAssertFalse(result.log.isEmpty)
     }
 
+    func testLiveFlexServiceTier() async throws {
+        try skipIfNoKey()
+        var request = InteractionRequest(input: .text("Reply with exactly the word: PONG"))
+        request.model = "gemini-3-flash-preview"
+        ServiceTierParam(.flex).apply(to: &request)
+        let interaction = try await client!.send(request)
+        XCTAssertEqual(interaction.status, .completed)
+        XCTAssertNotNil(interaction.outputText)
+    }
+
     func testLiveMultiTurnConversation() async throws {
         try skipIfNoKey()
         let agent = try Agent(client: client!, model: "gemini-3-flash-preview")
