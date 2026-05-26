@@ -1,3 +1,7 @@
+---
+status: alpha
+---
+
 # what-toolsession.md — Public Types in ToolSession.swift
 
 ## ToolCallLogEntry

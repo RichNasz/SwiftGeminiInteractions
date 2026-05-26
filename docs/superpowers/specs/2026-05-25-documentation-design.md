@@ -1,3 +1,7 @@
+---
+status: alpha
+---
+
 # SwiftGeminiInteractions Documentation Design
 
 **Date:** 2026-05-25

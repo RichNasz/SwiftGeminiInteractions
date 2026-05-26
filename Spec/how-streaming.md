@@ -1,3 +1,7 @@
+---
+status: alpha
+---
+
 # how-streaming.md — SSE Parsing and Stream Mechanics
 
 ## SSE event format

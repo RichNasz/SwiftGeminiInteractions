@@ -2,13 +2,17 @@
 
 A Swift client for the [Gemini Interactions API](https://ai.google.dev/gemini-api/docs/interactions) — send requests, stream responses, call tools, and run multi-turn agents.
 
+## Release Status
+
+**0.1.0-alpha.1** — Early adopter software. The API may change between alpha releases as it is exercised in real applications. Feedback and issues are welcome.
+
 ## Install
 
 Add to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/RichNasz/SwiftGeminiInteractions.git", branch: "main")
+    .package(url: "https://github.com/RichNasz/SwiftGeminiInteractions.git", from: "0.1.0-alpha.1")
 ]
 ```
 

@@ -1,3 +1,7 @@
+---
+status: alpha
+---
+
 # Background and Polling
 
 Background interactions allow you to submit long-running requests to the Gemini API and retrieve results asynchronously. Instead of waiting for a response, your app receives an in-progress interaction immediately and can poll for completion or use webhooks for notification.

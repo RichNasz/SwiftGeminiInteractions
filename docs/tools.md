@@ -1,3 +1,7 @@
+---
+status: alpha
+---
+
 # Tools
 
 Tools extend the Gemini model's capabilities by letting it call functions, search the web, execute code, and more. SwiftGeminiInteractions supports two kinds of tools: **built-in tools** that execute server-side, and **function tools** that run locally with your own handlers.

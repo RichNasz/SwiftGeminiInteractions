@@ -1,3 +1,7 @@
+---
+status: alpha
+---
+
 # how-toolloop.md — Tool Loop Algorithm
 
 ## store: true enforcement

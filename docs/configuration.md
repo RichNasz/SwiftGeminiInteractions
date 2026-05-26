@@ -1,3 +1,7 @@
+---
+status: alpha
+---
+
 # Configuration
 
 SwiftGeminiInteractions provides 17 configuration parameters for controlling model behavior, request processing, and output formats. Parameters are applied using the `InteractionConfigParameter` protocol and can be composed with result builders.

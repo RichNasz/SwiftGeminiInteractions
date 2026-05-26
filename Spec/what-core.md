@@ -1,3 +1,7 @@
+---
+status: alpha
+---
+
 # what-core.md — Public Types in SwiftGeminiInteractions.swift
 
 ## GeminiInteractionsError

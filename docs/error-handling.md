@@ -1,3 +1,7 @@
+---
+status: alpha
+---
+
 # Error Handling
 
 SwiftGeminiInteractions wraps all errors in a single `GeminiInteractionsError` enum. No raw Foundation errors (like `URLError`, `DecodingError`, or `EncodingError`) escape the public API.

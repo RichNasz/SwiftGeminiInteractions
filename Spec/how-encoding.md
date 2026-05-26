@@ -1,3 +1,7 @@
+---
+status: alpha
+---
+
 # how-encoding.md — Encoding Strategy
 
 ## Discriminated union encoding

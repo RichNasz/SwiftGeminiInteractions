@@ -1,3 +1,7 @@
+---
+status: alpha
+---
+
 # Package Traits
 
 SwiftGeminiInteractions uses Swift Package Traits to let you compile only the subsystems your app needs.

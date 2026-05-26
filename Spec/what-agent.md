@@ -1,3 +1,7 @@
+---
+status: alpha
+---
+
 # what-agent.md — Public Types in Agent.swift
 
 ## AgentTool

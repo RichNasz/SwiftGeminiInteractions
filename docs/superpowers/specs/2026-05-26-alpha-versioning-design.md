@@ -1,3 +1,7 @@
+---
+status: alpha
+---
+
 # Alpha Versioning Design
 
 **Date:** 2026-05-26  

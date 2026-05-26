@@ -1,3 +1,7 @@
+---
+status: alpha
+---
+
 # Gemini Macros Design Spec
 
 ## Goal

@@ -1,3 +1,7 @@
+---
+status: alpha
+---
+
 # Open Source Community Health Files — Design
 
 **Date:** 2026-05-26

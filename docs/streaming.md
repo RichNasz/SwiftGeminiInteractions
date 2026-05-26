@@ -1,3 +1,7 @@
+---
+status: alpha
+---
+
 # Streaming
 
 Real-time event streaming lets you receive incremental updates as the model generates content, enabling responsive UIs and early processing of partial results.

@@ -1,3 +1,7 @@
+---
+status: alpha
+---
+
 # Agent
 
 Agent is an actor wrapping ToolSession with automatic chaining, transcript tracking, and usage aggregation. It requires the Agent trait (enabled by default), which automatically enables ToolSession.

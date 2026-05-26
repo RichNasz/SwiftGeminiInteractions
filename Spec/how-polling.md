@@ -1,3 +1,7 @@
+---
+status: alpha
+---
+
 # how-polling.md — Background Poll Algorithm
 
 ## Clock type

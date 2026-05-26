@@ -1,3 +1,7 @@
+---
+status: alpha
+---
+
 # how-client.md — HTTP Construction, Headers, and Error Wrapping
 
 ## Base URL

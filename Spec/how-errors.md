@@ -1,3 +1,7 @@
+---
+status: alpha
+---
+
 # how-errors.md — Error Wrapping Strategy
 
 ## No Foundation errors escape the public API

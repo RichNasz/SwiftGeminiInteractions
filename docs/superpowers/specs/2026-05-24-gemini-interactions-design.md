@@ -1,3 +1,7 @@
+---
+status: alpha
+---
+
 # SwiftGeminiInteractions — Design Spec
 
 **Date:** 2026-05-24  

@@ -1,3 +1,7 @@
+---
+status: alpha
+---
+
 # Getting Started
 
 This guide walks you through the basics of using SwiftGeminiInteractions to interact with the Gemini Interactions API.
