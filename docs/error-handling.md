@@ -209,6 +209,4 @@ do {
 
 ## What's Next
 
-- [Background Interactions](background-interactions.md) — Learn about background mode and polling
-- [Streaming](streaming.md) — Stream partial responses in real-time
-- [Built-in Tools](built-in-tools.md) — Use server-side tools like Google Search and Code Execution
+- [Background & Polling](background-and-polling.md) — Long-running tasks and webhooks
