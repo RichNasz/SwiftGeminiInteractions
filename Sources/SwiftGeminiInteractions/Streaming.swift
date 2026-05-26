@@ -10,10 +10,9 @@ extension InteractionsClient {
                 do {
                     var r = request
                     r.store = true
+                    r.stream = true
                     let body = try await self.encode(r)
-                    var components = URLComponents(url: await self.interactionsURL(), resolvingAgainstBaseURL: false)!
-                    components.queryItems = [URLQueryItem(name: "stream", value: "true")]
-                    let url = components.url!
+                    let url = await self.interactionsURL()
                     let urlRequest = await self.makeRequest(url: url, method: "POST", body: body)
                     let session = await self.session
                     let (bytes, response) = try await session.bytes(for: urlRequest)
@@ -170,9 +169,10 @@ public enum InteractionStreamEvent: Codable, Sendable {
 
     private enum CodingKeys: String, CodingKey {
         case eventType   = "event_type"
-        case interaction, status, index, delta, message
-        case stepType    = "step_type"
+        case interaction, status, index, delta, message, step
     }
+
+    private enum StepCodingKeys: String, CodingKey { case type }
 
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -183,8 +183,9 @@ public enum InteractionStreamEvent: Codable, Sendable {
         case "interaction.status_update":
             self = .interactionStatusUpdate(try container.decode(InteractionStatus.self, forKey: .status))
         case "step.start":
+            let stepContainer = try container.nestedContainer(keyedBy: StepCodingKeys.self, forKey: .step)
             self = .stepStart(
-                stepType: try container.decode(String.self, forKey: .stepType),
+                stepType: try stepContainer.decode(String.self, forKey: .type),
                 index: try container.decode(Int.self, forKey: .index)
             )
         case "step.delta":
@@ -230,7 +231,7 @@ internal func parseSSE(from byteStream: AsyncThrowingStream<Data, Error>) -> Asy
                         for line in lines {
                             guard line.hasPrefix("data: ") else { continue }
                             let jsonStr = String(line.dropFirst("data: ".count))
-                            guard let jsonData = jsonStr.data(using: .utf8) else { continue }
+                            guard jsonStr.hasPrefix("{"), let jsonData = jsonStr.data(using: .utf8) else { continue }
                             let event = try decoder.decode(InteractionStreamEvent.self, from: jsonData)
                             if case .unknown = event { continue }
                             continuation.yield(event)
@@ -249,7 +250,7 @@ internal func parseSSE(from byteStream: AsyncThrowingStream<Data, Error>) -> Asy
                     for line in lines {
                         guard line.hasPrefix("data: ") else { continue }
                         let jsonStr = String(line.dropFirst("data: ".count))
-                        guard let jsonData = jsonStr.data(using: .utf8) else { continue }
+                        guard jsonStr.hasPrefix("{"), let jsonData = jsonStr.data(using: .utf8) else { continue }
                         let event = try decoder.decode(InteractionStreamEvent.self, from: jsonData)
                         if case .unknown = event { continue }
                         continuation.yield(event)

@@ -69,7 +69,7 @@ final class IntegrationTests: XCTestCase {
     func testLivePollBackgroundInteraction() async throws {
         try skipIfNoKey()
         var request = InteractionRequest(input: .text("Summarize the concept of recursion in two sentences."))
-        request.model = "gemini-3-flash-preview"
+        request.model = "gemini-3.5-flash"
         request.background = true
         request.store = true
         let initial = try await client!.send(request)

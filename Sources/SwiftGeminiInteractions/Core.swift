@@ -299,10 +299,17 @@ public enum Step: Codable, Sendable {
                 summary: try container.decodeIfPresent(String.self, forKey: .summary)
             )
         case "function_call":
+            let fcArgs: String
+            if let s = try? container.decode(String.self, forKey: .arguments) {
+                fcArgs = s
+            } else {
+                let raw = try container.decode(RawJSON.self, forKey: .arguments)
+                fcArgs = String(data: try JSONSerialization.data(withJSONObject: raw.any), encoding: .utf8) ?? "{}"
+            }
             self = .functionCall(
                 id: try container.decode(String.self, forKey: .id),
                 name: try container.decode(String.self, forKey: .name),
-                arguments: try container.decode(String.self, forKey: .arguments)
+                arguments: fcArgs
             )
         case "function_result":
             self = .functionResult(
@@ -340,10 +347,17 @@ public enum Step: Codable, Sendable {
                 content: try container.decode(String.self, forKey: .content)
             )
         case "mcp_server_tool_call":
+            let mcpArgs: String
+            if let s = try? container.decode(String.self, forKey: .arguments) {
+                mcpArgs = s
+            } else {
+                let raw = try container.decode(RawJSON.self, forKey: .arguments)
+                mcpArgs = String(data: try JSONSerialization.data(withJSONObject: raw.any), encoding: .utf8) ?? "{}"
+            }
             self = .mcpToolCall(
                 id: try container.decode(String.self, forKey: .id),
                 name: try container.decode(String.self, forKey: .name),
-                arguments: try container.decode(String.self, forKey: .arguments)
+                arguments: mcpArgs
             )
         case "mcp_server_tool_result":
             self = .mcpToolResult(
@@ -988,13 +1002,13 @@ public struct Interaction: Codable, Sendable {
     public let model: String?
     public let agent: String?
     public let status: InteractionStatus
-    public let created: String
+    public let created: String?
     public let updated: String?
     public let steps: [Step]
     public let usage: Usage?
 
     public init(id: String, object: String = "interaction", model: String? = nil,
-                agent: String? = nil, status: InteractionStatus, created: String,
+                agent: String? = nil, status: InteractionStatus, created: String? = nil,
                 updated: String? = nil, steps: [Step] = [], usage: Usage? = nil) {
         self.id = id
         self.object = object
@@ -1036,6 +1050,19 @@ public struct Interaction: Codable, Sendable {
 
     private enum CodingKeys: String, CodingKey {
         case id, object, model, agent, status, created, updated, steps, usage
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        object = try container.decodeIfPresent(String.self, forKey: .object) ?? "interaction"
+        model = try container.decodeIfPresent(String.self, forKey: .model)
+        agent = try container.decodeIfPresent(String.self, forKey: .agent)
+        status = try container.decode(InteractionStatus.self, forKey: .status)
+        created = try container.decodeIfPresent(String.self, forKey: .created)
+        updated = try container.decodeIfPresent(String.self, forKey: .updated)
+        steps = try container.decodeIfPresent([Step].self, forKey: .steps) ?? []
+        usage = try container.decodeIfPresent(Usage.self, forKey: .usage)
     }
 }
 

@@ -27,7 +27,7 @@ final class SSEParserTests: XCTestCase {
         {
             "event_type": "step.start",
             "index": 0,
-            "step_type": "model_output"
+            "step": {"type": "model_output"}
         }
         """.data(using: .utf8)!
         let event = try decoder.decode(InteractionStreamEvent.self, from: json)
@@ -121,7 +121,7 @@ final class SSEParserTests: XCTestCase {
         let sseData = """
         data: {"event_type": "interaction.created", "interaction": {"id": "v1_abc", "object": "interaction", "model": "gemini-3-flash-preview", "status": "in_progress", "created": "2026-05-24T10:00:00Z", "steps": []}}
 
-        data: {"event_type": "step.start", "index": 0, "step_type": "model_output"}
+        data: {"event_type": "step.start", "index": 0, "step": {"type": "model_output"}}
 
         data: {"event_type": "step.delta", "index": 0, "delta": {"type": "text", "text": "Hi"}}
 

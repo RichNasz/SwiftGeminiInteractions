@@ -128,7 +128,7 @@ final class ToolSessionTests: XCTestCase {
 
     func testStreamYieldsIterationStartedAndLLMEvents() async throws {
         let ssePayload = """
-        data: {"event_type": "step.start", "index": 0, "step_type": "model_output"}
+        data: {"event_type": "step.start", "index": 0, "step": {"type": "model_output"}}
 
         data: {"event_type": "step.delta", "index": 0, "delta": {"type": "text", "text": "Done"}}
 
@@ -163,7 +163,7 @@ final class ToolSessionTests: XCTestCase {
             if counter.value == 1 {
                 // First: requires_action — SSE with function_call
                 payload = """
-                data: {"event_type": "step.start", "index": 0, "step_type": "function_call"}
+                data: {"event_type": "step.start", "index": 0, "step": {"type": "function_call"}}
 
                 data: {"event_type": "step.delta", "index": 0, "delta": {"type": "function_call_arguments", "delta": "{\\"msg\\":\\"hi\\"}", "call_id": "call-1"}}
 

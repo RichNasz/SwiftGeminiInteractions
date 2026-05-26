@@ -194,7 +194,7 @@ public struct ToolSession: Sendable {
                 toolResults.first(where: { $0.callId == call.id })
             }
             currentInput = orderedResults.map { result in
-                FunctionOutput(callId: result.callId, result: result.output, isError: result.isError)
+                Step.functionResult(callId: result.callId, result: result.output, name: result.name, isError: result.isError)
             }
 
             previousId = interaction.id
@@ -298,7 +298,7 @@ public struct ToolSession: Sendable {
 
                         // Build next input from function results in original order
                         currentInput = results.map { r in
-                            FunctionOutput(callId: r.callId, result: r.output, isError: r.isError)
+                            Step.functionResult(callId: r.callId, result: r.output, name: r.name, isError: r.isError)
                         }
                         currentPreviousId = interaction.id
                     }
