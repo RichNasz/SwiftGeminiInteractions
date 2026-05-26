@@ -23,7 +23,7 @@ let package = Package(
         .trait(
             name: "Full",
             description: "ToolSession + Agent — all orchestration layers enabled",
-            enabledTraits: ["ToolSession", "Agent"]
+            enabledTraits: ["Agent"]
         ),
 
         // Default — users who don't specify traits get everything

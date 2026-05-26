@@ -70,9 +70,12 @@ extension InteractionsClient {
                     let urlRequest = await self.makeRequest(url: url, method: "GET")
                     let session = await self.session
                     let (bytes, response) = try await session.bytes(for: urlRequest)
-                    guard let httpResponse = response as? HTTPURLResponse,
-                          (200...299).contains(httpResponse.statusCode) else {
-                        continuation.finish()
+                    guard let httpResponse = response as? HTTPURLResponse else {
+                        continuation.finish(throwing: GeminiInteractionsError.httpError(statusCode: 0, body: "No HTTP response"))
+                        return
+                    }
+                    guard (200...299).contains(httpResponse.statusCode) else {
+                        continuation.finish(throwing: GeminiInteractionsError.httpError(statusCode: httpResponse.statusCode, body: ""))
                         return
                     }
                     let byteStream = AsyncThrowingStream<Data, Error> { bc in
