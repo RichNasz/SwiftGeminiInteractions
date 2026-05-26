@@ -1006,10 +1006,12 @@ public struct Interaction: Codable, Sendable {
     public let updated: String?
     public let steps: [Step]
     public let usage: Usage?
+    public let serviceTier: ServiceTier?
 
     public init(id: String, object: String = "interaction", model: String? = nil,
                 agent: String? = nil, status: InteractionStatus, created: String? = nil,
-                updated: String? = nil, steps: [Step] = [], usage: Usage? = nil) {
+                updated: String? = nil, steps: [Step] = [], usage: Usage? = nil,
+                serviceTier: ServiceTier? = nil) {
         self.id = id
         self.object = object
         self.model = model
@@ -1019,6 +1021,7 @@ public struct Interaction: Codable, Sendable {
         self.updated = updated
         self.steps = steps
         self.usage = usage
+        self.serviceTier = serviceTier
     }
 
     public var outputText: String? {
@@ -1050,6 +1053,7 @@ public struct Interaction: Codable, Sendable {
 
     private enum CodingKeys: String, CodingKey {
         case id, object, model, agent, status, created, updated, steps, usage
+        case serviceTier = "service_tier"
     }
 
     public init(from decoder: any Decoder) throws {
@@ -1063,6 +1067,7 @@ public struct Interaction: Codable, Sendable {
         updated = try container.decodeIfPresent(String.self, forKey: .updated)
         steps = try container.decodeIfPresent([Step].self, forKey: .steps) ?? []
         usage = try container.decodeIfPresent(Usage.self, forKey: .usage)
+        serviceTier = try container.decodeIfPresent(ServiceTier.self, forKey: .serviceTier)
     }
 }
 

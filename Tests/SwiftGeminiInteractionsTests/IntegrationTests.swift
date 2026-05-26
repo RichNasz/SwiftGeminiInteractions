@@ -74,6 +74,8 @@ final class IntegrationTests: XCTestCase {
         let interaction = try await client!.send(request)
         XCTAssertEqual(interaction.status, .completed)
         XCTAssertNotNil(interaction.outputText)
+        XCTAssertEqual(interaction.serviceTier, .flex,
+            "API should confirm flex tier was used; got: \(String(describing: interaction.serviceTier))")
     }
 
     func testLiveMultiTurnConversation() async throws {
