@@ -28,6 +28,7 @@ Replace the current scattered documentation with a progressive-disclosure docume
 **Target length:** ~80 lines.
 
 **Structure:**
+- Badge row: Swift version, Platform, License, Version, Built with Claude Code
 - One-sentence description
 - Swift Package Manager install snippet (Package.swift dependency)
 - One minimal code example: create client, send request, print output
