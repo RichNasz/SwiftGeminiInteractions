@@ -1,0 +1,3 @@
+module SwiftLLMToolMacros {
+    header "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftLLMToolMacros.build/include/SwiftLLMToolMacros-Swift.h"
+}

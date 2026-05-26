@@ -1,0 +1,33 @@
+{
+  "": {
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftLLMToolMacrosPlugin-tool.build/primary.swiftdeps"
+  },
+  "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/checkouts/SwiftLLMToolMacros/Sources/SwiftLLMToolMacrosPlugin/GenerableMacro.swift": {
+    "dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftLLMToolMacrosPlugin-tool.build/GenerableMacro.d",
+    "object": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftLLMToolMacrosPlugin-tool.build/GenerableMacro.swift.o",
+    "swiftmodule": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftLLMToolMacrosPlugin-tool.build/GenerableMacro~partial.swiftmodule",
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftLLMToolMacrosPlugin-tool.build/GenerableMacro.swiftdeps",
+    "diagnostics": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftLLMToolMacrosPlugin-tool.build/GenerableMacro.dia"
+  },
+  "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/checkouts/SwiftLLMToolMacros/Sources/SwiftLLMToolMacrosPlugin/GuideMacro.swift": {
+    "dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftLLMToolMacrosPlugin-tool.build/GuideMacro.d",
+    "object": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftLLMToolMacrosPlugin-tool.build/GuideMacro.swift.o",
+    "swiftmodule": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftLLMToolMacrosPlugin-tool.build/GuideMacro~partial.swiftmodule",
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftLLMToolMacrosPlugin-tool.build/GuideMacro.swiftdeps",
+    "diagnostics": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftLLMToolMacrosPlugin-tool.build/GuideMacro.dia"
+  },
+  "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/checkouts/SwiftLLMToolMacros/Sources/SwiftLLMToolMacrosPlugin/Plugin.swift": {
+    "dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftLLMToolMacrosPlugin-tool.build/Plugin.d",
+    "object": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftLLMToolMacrosPlugin-tool.build/Plugin.swift.o",
+    "swiftmodule": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftLLMToolMacrosPlugin-tool.build/Plugin~partial.swiftmodule",
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftLLMToolMacrosPlugin-tool.build/Plugin.swiftdeps",
+    "diagnostics": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftLLMToolMacrosPlugin-tool.build/Plugin.dia"
+  },
+  "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/checkouts/SwiftLLMToolMacros/Sources/SwiftLLMToolMacrosPlugin/ToolMacro.swift": {
+    "dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftLLMToolMacrosPlugin-tool.build/ToolMacro.d",
+    "object": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftLLMToolMacrosPlugin-tool.build/ToolMacro.swift.o",
+    "swiftmodule": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftLLMToolMacrosPlugin-tool.build/ToolMacro~partial.swiftmodule",
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftLLMToolMacrosPlugin-tool.build/ToolMacro.swiftdeps",
+    "diagnostics": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftLLMToolMacrosPlugin-tool.build/ToolMacro.dia"
+  }
+}

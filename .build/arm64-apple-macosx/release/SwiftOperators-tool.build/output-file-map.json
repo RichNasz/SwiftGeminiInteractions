@@ -1,0 +1,67 @@
+{
+  "": {
+    "dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/SwiftOperators.d",
+    "object": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/SwiftOperators.o",
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/primary.swiftdeps"
+  },
+  "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/checkouts/swift-syntax/Sources/SwiftOperators/Operator.swift": {
+    "object": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/Operator.swift.o",
+    "swiftmodule": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/Operator~partial.swiftmodule",
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/Operator.swiftdeps",
+    "diagnostics": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/Operator.dia"
+  },
+  "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/checkouts/swift-syntax/Sources/SwiftOperators/OperatorError+Diagnostics.swift": {
+    "object": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/OperatorError+Diagnostics.swift.o",
+    "swiftmodule": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/OperatorError+Diagnostics~partial.swiftmodule",
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/OperatorError+Diagnostics.swiftdeps",
+    "diagnostics": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/OperatorError+Diagnostics.dia"
+  },
+  "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/checkouts/swift-syntax/Sources/SwiftOperators/OperatorError.swift": {
+    "object": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/OperatorError.swift.o",
+    "swiftmodule": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/OperatorError~partial.swiftmodule",
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/OperatorError.swiftdeps",
+    "diagnostics": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/OperatorError.dia"
+  },
+  "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/checkouts/swift-syntax/Sources/SwiftOperators/OperatorTable+Defaults.swift": {
+    "object": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/OperatorTable+Defaults.swift.o",
+    "swiftmodule": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/OperatorTable+Defaults~partial.swiftmodule",
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/OperatorTable+Defaults.swiftdeps",
+    "diagnostics": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/OperatorTable+Defaults.dia"
+  },
+  "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/checkouts/swift-syntax/Sources/SwiftOperators/OperatorTable+Folding.swift": {
+    "object": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/OperatorTable+Folding.swift.o",
+    "swiftmodule": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/OperatorTable+Folding~partial.swiftmodule",
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/OperatorTable+Folding.swiftdeps",
+    "diagnostics": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/OperatorTable+Folding.dia"
+  },
+  "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/checkouts/swift-syntax/Sources/SwiftOperators/OperatorTable+Semantics.swift": {
+    "object": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/OperatorTable+Semantics.swift.o",
+    "swiftmodule": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/OperatorTable+Semantics~partial.swiftmodule",
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/OperatorTable+Semantics.swiftdeps",
+    "diagnostics": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/OperatorTable+Semantics.dia"
+  },
+  "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/checkouts/swift-syntax/Sources/SwiftOperators/OperatorTable.swift": {
+    "object": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/OperatorTable.swift.o",
+    "swiftmodule": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/OperatorTable~partial.swiftmodule",
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/OperatorTable.swiftdeps",
+    "diagnostics": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/OperatorTable.dia"
+  },
+  "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/checkouts/swift-syntax/Sources/SwiftOperators/PrecedenceGraph.swift": {
+    "object": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/PrecedenceGraph.swift.o",
+    "swiftmodule": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/PrecedenceGraph~partial.swiftmodule",
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/PrecedenceGraph.swiftdeps",
+    "diagnostics": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/PrecedenceGraph.dia"
+  },
+  "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/checkouts/swift-syntax/Sources/SwiftOperators/PrecedenceGroup.swift": {
+    "object": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/PrecedenceGroup.swift.o",
+    "swiftmodule": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/PrecedenceGroup~partial.swiftmodule",
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/PrecedenceGroup.swiftdeps",
+    "diagnostics": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/PrecedenceGroup.dia"
+  },
+  "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/checkouts/swift-syntax/Sources/SwiftOperators/SyntaxSynthesis.swift": {
+    "object": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/SyntaxSynthesis.swift.o",
+    "swiftmodule": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/SyntaxSynthesis~partial.swiftmodule",
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/SyntaxSynthesis.swiftdeps",
+    "diagnostics": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftOperators-tool.build/SyntaxSynthesis.dia"
+  }
+}

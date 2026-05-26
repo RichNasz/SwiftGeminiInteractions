@@ -1,0 +1,13 @@
+{
+  "": {
+    "dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntax510.build/SwiftSyntax510.d",
+    "object": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntax510.build/SwiftSyntax510.o",
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntax510.build/primary.swiftdeps"
+  },
+  "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/checkouts/swift-syntax/Sources/VersionMarkerModules/SwiftSyntax510/Empty.swift": {
+    "object": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntax510.build/Empty.swift.o",
+    "swiftmodule": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntax510.build/Empty~partial.swiftmodule",
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntax510.build/Empty.swiftdeps",
+    "diagnostics": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntax510.build/Empty.dia"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "": {
+    "dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacrosTestSupport.build/SwiftSyntaxMacrosTestSupport.d",
+    "object": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacrosTestSupport.build/SwiftSyntaxMacrosTestSupport.o",
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacrosTestSupport.build/primary.swiftdeps"
+  },
+  "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacrosTestSupport/Assertions.swift": {
+    "object": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacrosTestSupport.build/Assertions.swift.o",
+    "swiftmodule": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacrosTestSupport.build/Assertions~partial.swiftmodule",
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacrosTestSupport.build/Assertions.swiftdeps",
+    "diagnostics": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacrosTestSupport.build/Assertions.dia"
+  }
+}

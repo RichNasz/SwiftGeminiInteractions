@@ -1,0 +1,68 @@
+{
+  "": {
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/primary.swiftdeps"
+  },
+  "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/Tests/SwiftGeminiInteractionsTests/AgentTests.swift": {
+    "dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/AgentTests.d",
+    "object": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/AgentTests.swift.o",
+    "swiftmodule": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/AgentTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/AgentTests.swiftdeps",
+    "diagnostics": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/AgentTests.dia"
+  },
+  "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/Tests/SwiftGeminiInteractionsTests/ConfigTests.swift": {
+    "dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/ConfigTests.d",
+    "object": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/ConfigTests.swift.o",
+    "swiftmodule": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/ConfigTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/ConfigTests.swiftdeps",
+    "diagnostics": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/ConfigTests.dia"
+  },
+  "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/Tests/SwiftGeminiInteractionsTests/DecodingTests.swift": {
+    "dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/DecodingTests.d",
+    "object": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/DecodingTests.swift.o",
+    "swiftmodule": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/DecodingTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/DecodingTests.swiftdeps",
+    "diagnostics": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/DecodingTests.dia"
+  },
+  "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/Tests/SwiftGeminiInteractionsTests/EncodingTests.swift": {
+    "dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/EncodingTests.d",
+    "object": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/EncodingTests.swift.o",
+    "swiftmodule": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/EncodingTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/EncodingTests.swiftdeps",
+    "diagnostics": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/EncodingTests.dia"
+  },
+  "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/Tests/SwiftGeminiInteractionsTests/IntegrationTests.swift": {
+    "dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/IntegrationTests.d",
+    "object": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/IntegrationTests.swift.o",
+    "swiftmodule": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/IntegrationTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/IntegrationTests.swiftdeps",
+    "diagnostics": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/IntegrationTests.dia"
+  },
+  "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/Tests/SwiftGeminiInteractionsTests/MockURLProtocol.swift": {
+    "dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/MockURLProtocol.d",
+    "object": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/MockURLProtocol.swift.o",
+    "swiftmodule": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/MockURLProtocol~partial.swiftmodule",
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/MockURLProtocol.swiftdeps",
+    "diagnostics": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/MockURLProtocol.dia"
+  },
+  "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/Tests/SwiftGeminiInteractionsTests/SSEParserTests.swift": {
+    "dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/SSEParserTests.d",
+    "object": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/SSEParserTests.swift.o",
+    "swiftmodule": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/SSEParserTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/SSEParserTests.swiftdeps",
+    "diagnostics": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/SSEParserTests.dia"
+  },
+  "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/Tests/SwiftGeminiInteractionsTests/SwiftGeminiInteractionsTests.swift": {
+    "dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/SwiftGeminiInteractionsTests.d",
+    "object": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/SwiftGeminiInteractionsTests.swift.o",
+    "swiftmodule": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/SwiftGeminiInteractionsTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/SwiftGeminiInteractionsTests.swiftdeps",
+    "diagnostics": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/SwiftGeminiInteractionsTests.dia"
+  },
+  "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/Tests/SwiftGeminiInteractionsTests/ToolSessionTests.swift": {
+    "dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/ToolSessionTests.d",
+    "object": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/ToolSessionTests.swift.o",
+    "swiftmodule": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/ToolSessionTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/ToolSessionTests.swiftdeps",
+    "diagnostics": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftGeminiInteractionsTests.build/ToolSessionTests.dia"
+  }
+}

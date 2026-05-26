@@ -1,0 +1,61 @@
+{
+  "": {
+    "dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacroExpansion-tool.build/SwiftSyntaxMacroExpansion.d",
+    "object": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacroExpansion-tool.build/SwiftSyntaxMacroExpansion.o",
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacroExpansion-tool.build/primary.swiftdeps"
+  },
+  "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacroExpansion/BasicMacroExpansionContext.swift": {
+    "object": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacroExpansion-tool.build/BasicMacroExpansionContext.swift.o",
+    "swiftmodule": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacroExpansion-tool.build/BasicMacroExpansionContext~partial.swiftmodule",
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacroExpansion-tool.build/BasicMacroExpansionContext.swiftdeps",
+    "diagnostics": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacroExpansion-tool.build/BasicMacroExpansionContext.dia"
+  },
+  "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacroExpansion/FunctionParameterUtils.swift": {
+    "object": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacroExpansion-tool.build/FunctionParameterUtils.swift.o",
+    "swiftmodule": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacroExpansion-tool.build/FunctionParameterUtils~partial.swiftmodule",
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacroExpansion-tool.build/FunctionParameterUtils.swiftdeps",
+    "diagnostics": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacroExpansion-tool.build/FunctionParameterUtils.dia"
+  },
+  "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacroExpansion/IndentationUtils.swift": {
+    "object": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacroExpansion-tool.build/IndentationUtils.swift.o",
+    "swiftmodule": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacroExpansion-tool.build/IndentationUtils~partial.swiftmodule",
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacroExpansion-tool.build/IndentationUtils.swiftdeps",
+    "diagnostics": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacroExpansion-tool.build/IndentationUtils.dia"
+  },
+  "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacroExpansion/MacroArgument.swift": {
+    "object": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacroExpansion-tool.build/MacroArgument.swift.o",
+    "swiftmodule": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacroExpansion-tool.build/MacroArgument~partial.swiftmodule",
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacroExpansion-tool.build/MacroArgument.swiftdeps",
+    "diagnostics": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacroExpansion-tool.build/MacroArgument.dia"
+  },
+  "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacroExpansion/MacroExpansion.swift": {
+    "object": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacroExpansion-tool.build/MacroExpansion.swift.o",
+    "swiftmodule": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacroExpansion-tool.build/MacroExpansion~partial.swiftmodule",
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacroExpansion-tool.build/MacroExpansion.swiftdeps",
+    "diagnostics": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacroExpansion-tool.build/MacroExpansion.dia"
+  },
+  "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacroExpansion/MacroExpansionDiagnosticMessages.swift": {
+    "object": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacroExpansion-tool.build/MacroExpansionDiagnosticMessages.swift.o",
+    "swiftmodule": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacroExpansion-tool.build/MacroExpansionDiagnosticMessages~partial.swiftmodule",
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacroExpansion-tool.build/MacroExpansionDiagnosticMessages.swiftdeps",
+    "diagnostics": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacroExpansion-tool.build/MacroExpansionDiagnosticMessages.dia"
+  },
+  "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacroExpansion/MacroReplacement.swift": {
+    "object": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacroExpansion-tool.build/MacroReplacement.swift.o",
+    "swiftmodule": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacroExpansion-tool.build/MacroReplacement~partial.swiftmodule",
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacroExpansion-tool.build/MacroReplacement.swiftdeps",
+    "diagnostics": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacroExpansion-tool.build/MacroReplacement.dia"
+  },
+  "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacroExpansion/MacroSpec.swift": {
+    "object": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacroExpansion-tool.build/MacroSpec.swift.o",
+    "swiftmodule": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacroExpansion-tool.build/MacroSpec~partial.swiftmodule",
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacroExpansion-tool.build/MacroSpec.swiftdeps",
+    "diagnostics": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacroExpansion-tool.build/MacroSpec.dia"
+  },
+  "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacroExpansion/MacroSystem.swift": {
+    "object": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacroExpansion-tool.build/MacroSystem.swift.o",
+    "swiftmodule": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacroExpansion-tool.build/MacroSystem~partial.swiftmodule",
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacroExpansion-tool.build/MacroSystem.swiftdeps",
+    "diagnostics": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/release/SwiftSyntaxMacroExpansion-tool.build/MacroSystem.dia"
+  }
+}

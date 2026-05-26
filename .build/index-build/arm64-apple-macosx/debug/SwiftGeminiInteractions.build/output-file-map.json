@@ -1,0 +1,12 @@
+{
+  "": {
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/index-build/arm64-apple-macosx/debug/SwiftGeminiInteractions.build/primary.swiftdeps"
+  },
+  "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/Sources/SwiftGeminiInteractions/SwiftGeminiInteractions.swift": {
+    "dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/index-build/arm64-apple-macosx/debug/SwiftGeminiInteractions.build/SwiftGeminiInteractions.d",
+    "object": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/index-build/arm64-apple-macosx/debug/SwiftGeminiInteractions.build/SwiftGeminiInteractions.swift.o",
+    "swiftmodule": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/index-build/arm64-apple-macosx/debug/SwiftGeminiInteractions.build/SwiftGeminiInteractions~partial.swiftmodule",
+    "swift-dependencies": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/index-build/arm64-apple-macosx/debug/SwiftGeminiInteractions.build/SwiftGeminiInteractions.swiftdeps",
+    "diagnostics": "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/index-build/arm64-apple-macosx/debug/SwiftGeminiInteractions.build/SwiftGeminiInteractions.dia"
+  }
+}

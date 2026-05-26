@@ -1,0 +1,3 @@
+module SwiftCompilerPlugin {
+    header "/Users/rnaszcyn/Development/SwiftLLMapis/SwiftGeminiInteractions/.build/arm64-apple-macosx/debug/SwiftCompilerPlugin-tool.build/include/SwiftCompilerPlugin-Swift.h"
+}
