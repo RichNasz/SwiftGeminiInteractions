@@ -87,6 +87,16 @@ public struct ModalityTokens: Codable, Sendable {
     }
 }
 
+public struct GroundingToolCount: Codable, Sendable {
+    public let type: String
+    public let count: Int
+
+    public init(type: String, count: Int) {
+        self.type = type
+        self.count = count
+    }
+}
+
 public enum Annotation: Codable, Sendable {
     case urlCitation(url: String, title: String?, startIndex: Int, endIndex: Int)
     case fileCitation(documentUri: String, fileName: String, source: String, pageNumber: Int?, startIndex: Int, endIndex: Int)
@@ -968,11 +978,19 @@ public struct Usage: Codable, Sendable {
     public let totalToolUseTokens: Int
     public let totalTokens: Int
     public let inputTokensByModality: [ModalityTokens]
+    public let outputTokensByModality: [ModalityTokens]
+    public let cachedTokensByModality: [ModalityTokens]
+    public let toolUseTokensByModality: [ModalityTokens]
+    public let groundingToolCount: [GroundingToolCount]
 
     public init(
         totalInputTokens: Int, totalOutputTokens: Int, totalThoughtTokens: Int,
         totalCachedTokens: Int, totalToolUseTokens: Int, totalTokens: Int,
-        inputTokensByModality: [ModalityTokens]
+        inputTokensByModality: [ModalityTokens] = [],
+        outputTokensByModality: [ModalityTokens] = [],
+        cachedTokensByModality: [ModalityTokens] = [],
+        toolUseTokensByModality: [ModalityTokens] = [],
+        groundingToolCount: [GroundingToolCount] = []
     ) {
         self.totalInputTokens = totalInputTokens
         self.totalOutputTokens = totalOutputTokens
@@ -981,16 +999,39 @@ public struct Usage: Codable, Sendable {
         self.totalToolUseTokens = totalToolUseTokens
         self.totalTokens = totalTokens
         self.inputTokensByModality = inputTokensByModality
+        self.outputTokensByModality = outputTokensByModality
+        self.cachedTokensByModality = cachedTokensByModality
+        self.toolUseTokensByModality = toolUseTokensByModality
+        self.groundingToolCount = groundingToolCount
     }
 
     private enum CodingKeys: String, CodingKey {
-        case totalInputTokens    = "total_input_tokens"
-        case totalOutputTokens   = "total_output_tokens"
-        case totalThoughtTokens  = "total_thought_tokens"
-        case totalCachedTokens   = "total_cached_tokens"
-        case totalToolUseTokens  = "total_tool_use_tokens"
-        case totalTokens         = "total_tokens"
-        case inputTokensByModality = "input_tokens_by_modality"
+        case totalInputTokens         = "total_input_tokens"
+        case totalOutputTokens        = "total_output_tokens"
+        case totalThoughtTokens       = "total_thought_tokens"
+        case totalCachedTokens        = "total_cached_tokens"
+        case totalToolUseTokens       = "total_tool_use_tokens"
+        case totalTokens              = "total_tokens"
+        case inputTokensByModality    = "input_tokens_by_modality"
+        case outputTokensByModality   = "output_tokens_by_modality"
+        case cachedTokensByModality   = "cached_tokens_by_modality"
+        case toolUseTokensByModality  = "tool_use_tokens_by_modality"
+        case groundingToolCount       = "grounding_tool_count"
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        totalInputTokens        = try c.decodeIfPresent(Int.self, forKey: .totalInputTokens) ?? 0
+        totalOutputTokens       = try c.decodeIfPresent(Int.self, forKey: .totalOutputTokens) ?? 0
+        totalThoughtTokens      = try c.decodeIfPresent(Int.self, forKey: .totalThoughtTokens) ?? 0
+        totalCachedTokens       = try c.decodeIfPresent(Int.self, forKey: .totalCachedTokens) ?? 0
+        totalToolUseTokens      = try c.decodeIfPresent(Int.self, forKey: .totalToolUseTokens) ?? 0
+        totalTokens             = try c.decodeIfPresent(Int.self, forKey: .totalTokens) ?? 0
+        inputTokensByModality   = try c.decodeIfPresent([ModalityTokens].self, forKey: .inputTokensByModality) ?? []
+        outputTokensByModality  = try c.decodeIfPresent([ModalityTokens].self, forKey: .outputTokensByModality) ?? []
+        cachedTokensByModality  = try c.decodeIfPresent([ModalityTokens].self, forKey: .cachedTokensByModality) ?? []
+        toolUseTokensByModality = try c.decodeIfPresent([ModalityTokens].self, forKey: .toolUseTokensByModality) ?? []
+        groundingToolCount      = try c.decodeIfPresent([GroundingToolCount].self, forKey: .groundingToolCount) ?? []
     }
 }
 
