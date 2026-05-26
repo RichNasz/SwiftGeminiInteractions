@@ -1,6 +1,8 @@
 // Sources/SwiftGeminiInteractions/ToolSession.swift
 import Foundation
 
+#if ToolSession
+
 // MARK: - ToolCallLogEntry
 
 public struct ToolCallLogEntry: Sendable {
@@ -330,3 +332,5 @@ public struct ToolSession: Sendable {
         return request
     }
 }
+
+#endif

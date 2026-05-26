@@ -1,6 +1,8 @@
 // Sources/SwiftGeminiInteractions/Agent.swift
 import Foundation
 
+#if Agent
+
 // MARK: - AgentTool
 
 public struct AgentTool: Sendable {
@@ -318,3 +320,5 @@ public actor Agent {
         }
     }
 }
+
+#endif
