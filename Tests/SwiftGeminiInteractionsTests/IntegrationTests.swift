@@ -66,6 +66,16 @@ final class IntegrationTests: XCTestCase {
         XCTAssertFalse(result.log.isEmpty)
     }
 
+    func testLiveMultiTurnConversation() async throws {
+        try skipIfNoKey()
+        let agent = try Agent(client: client!, model: "gemini-3-flash-preview")
+        let r1 = try await agent.send("My name is Claude. Remember it.")
+        XCTAssertFalse(r1.isEmpty)
+        let r2 = try await agent.send("What is my name?")
+        XCTAssertTrue(r2.lowercased().contains("claude"),
+            "Expected second reply to recall the name; got: \(r2)")
+    }
+
     func testLivePollBackgroundInteraction() async throws {
         try skipIfNoKey()
         var request = InteractionRequest(input: .text("Summarize the concept of recursion in two sentences."))
