@@ -4,16 +4,27 @@ import Foundation
 
 // MARK: - GeminiInteractionsError
 
+/// Errors thrown by all SwiftGeminiInteractions public API methods.
 public enum GeminiInteractionsError: Error, LocalizedError, @unchecked Sendable {
+    /// Network connectivity failure (no internet, DNS resolution, timeout).
     case networkError(URLError)
+    /// Non-2xx HTTP response. HTTP 429 is reported as `.rateLimitExceeded` instead.
     case httpError(statusCode: Int, body: String)
+    /// HTTP 429 rate limit. Retry after a short delay.
     case rateLimitExceeded
+    /// Failed to decode a response from the API.
     case decodingError(DecodingError)
+    /// Failed to encode a request for the API.
     case encodingError(EncodingError)
+    /// Invalid input provided by the caller.
     case invalidInput(String)
+    /// A tool handler threw an error during execution.
     case toolExecutionFailed(name: String, error: any Error)
+    /// Tool loop exceeded the configured maximum iteration count.
     case maxIterationsExceeded(Int)
+    /// Background poll timed out waiting for completion.
     case pollTimeout(id: String)
+    /// Interaction ended in a failure state.
     case interactionFailed(id: String, status: InteractionStatus)
 
     public var errorDescription: String? {
@@ -32,40 +43,69 @@ public enum GeminiInteractionsError: Error, LocalizedError, @unchecked Sendable 
     }
 }
 
+/// The lifecycle status of an interaction.
 public enum InteractionStatus: String, Codable, Sendable {
+    /// The interaction is currently processing.
     case inProgress     = "in_progress"
+    /// The model is waiting for tool results or user input.
     case requiresAction = "requires_action"
+    /// The interaction finished successfully.
     case completed      = "completed"
+    /// The interaction failed with an error.
     case failed         = "failed"
+    /// The interaction was explicitly cancelled.
     case cancelled      = "cancelled"
+    /// The interaction ended without completing.
     case incomplete     = "incomplete"
+    /// Token or request budget was exceeded.
     case budgetExceeded = "budget_exceeded"
 }
 
+/// Service tier for request prioritization and rate limits.
 public enum ServiceTier: String, Codable, Sendable {
-    case flex, standard, priority
+    /// Flexible service tier with elastic capacity.
+    case flex
+    /// Standard service tier.
+    case standard
+    /// Priority service tier with higher rate limits.
+    case priority
 }
 
+/// Output modality returned by the model.
 public enum ResponseModality: String, Codable, Sendable {
     case text, image, audio, video, document
 }
 
+/// Extended thinking depth level.
 public enum ThinkingLevel: String, Codable, Sendable {
     case none, low, medium, high
 }
 
+/// Whether to include summaries of extended thinking steps.
 public enum ThinkingSummaries: String, Codable, Sendable {
     case enabled, disabled
 }
 
+/// Controls how the model selects tools to call.
 public enum ToolChoiceMode: String, Codable, Sendable {
-    case auto, none, required
+    /// Let the model decide whether to call tools.
+    case auto
+    /// Prevent the model from calling tools.
+    case none
+    /// Require the model to call at least one tool.
+    case required
 }
 
+/// Configuration for tool selection behavior.
 public struct ToolChoiceConfig: Codable, Sendable {
+    /// The tool selection mode.
     public let mode: ToolChoiceMode
+    /// Optional list of tool names the model may call. Restricts `.auto` or `.required` modes.
     public let allowedTools: [String]?
 
+    /// Creates a tool choice configuration.
+    /// - Parameter mode: The tool selection mode.
+    /// - Parameter allowedTools: Optional list of permitted tool names.
     public init(mode: ToolChoiceMode, allowedTools: [String]? = nil) {
         self.mode = mode
         self.allowedTools = allowedTools
@@ -77,8 +117,11 @@ public struct ToolChoiceConfig: Codable, Sendable {
     }
 }
 
+/// Token usage by modality (text, image, audio, etc.).
 public struct ModalityTokens: Codable, Sendable {
+    /// The modality name.
     public let modality: String
+    /// Token count for this modality.
     public let tokens: Int
 
     public init(modality: String, tokens: Int) {
@@ -87,8 +130,11 @@ public struct ModalityTokens: Codable, Sendable {
     }
 }
 
+/// Count of grounding tool invocations by type.
 public struct GroundingToolCount: Codable, Sendable {
+    /// The grounding tool type.
     public let type: String
+    /// Number of invocations.
     public let count: Int
 
     public init(type: String, count: Int) {
@@ -97,9 +143,13 @@ public struct GroundingToolCount: Codable, Sendable {
     }
 }
 
+/// Inline citation annotations in model text output.
 public enum Annotation: Codable, Sendable {
+    /// Citation to a web URL.
     case urlCitation(url: String, title: String?, startIndex: Int, endIndex: Int)
+    /// Citation to a document file.
     case fileCitation(documentUri: String, fileName: String, source: String, pageNumber: Int?, startIndex: Int, endIndex: Int)
+    /// Citation to a place or location.
     case placeCitation(name: String, startIndex: Int, endIndex: Int)
 
     private enum CodingKeys: String, CodingKey {
@@ -168,10 +218,15 @@ public enum Annotation: Codable, Sendable {
     }
 }
 
+/// A content item in a conversation step (text, image, document, or video).
 public enum Content: Codable, Sendable {
+    /// Text content with optional inline citations.
     case text(String, annotations: [Annotation]?)
+    /// Image content provided inline or by URI.
     case image(data: Data?, mimeType: String?, uri: String?)
+    /// Document content provided inline or by URI.
     case document(data: Data?, mimeType: String?, uri: String?)
+    /// Video content provided inline or by URI.
     case video(data: Data?, mimeType: String?, uri: String?)
 
     private enum CodingKeys: String, CodingKey {
@@ -237,9 +292,13 @@ public enum Content: Codable, Sendable {
     }
 }
 
+/// A single result from a Google Search tool call.
 public struct GoogleSearchResult: Codable, Sendable {
+    /// Search result title.
     public let title: String?
+    /// Search result URL.
     public let url: String?
+    /// Search result snippet or description.
     public let snippet: String?
 
     public init(title: String? = nil, url: String? = nil, snippet: String? = nil) {
@@ -251,10 +310,15 @@ public struct GoogleSearchResult: Codable, Sendable {
     }
 }
 
+/// A single result from a file search tool call.
 public struct FileSearchResult: Codable, Sendable {
+    /// File identifier in the file search store.
     public let fileId: String?
+    /// File name.
     public let fileName: String?
+    /// Relevant text snippet from the file.
     public let snippet: String?
+    /// Relevance score.
     public let score: Double?
 
     public init(fileId: String? = nil, fileName: String? = nil, snippet: String? = nil, score: Double? = nil) {
@@ -268,24 +332,45 @@ public struct FileSearchResult: Codable, Sendable {
     }
 }
 
+/// A single step in an interaction's conversation history.
+///
+/// The API uses a unified steps array for both sent and received content.
 public enum Step: Codable, Sendable {
+    /// User-provided input with text, images, documents, or video.
     case userInput(content: [Content])
+    /// Model-generated text or multimodal output.
     case modelOutput(content: [Content])
+    /// Extended thinking step with optional summary.
     case thought(content: [Content], summary: String?)
+    /// Function tool call initiated by the model.
     case functionCall(id: String, name: String, arguments: String)
+    /// Result of a function tool execution.
     case functionResult(callId: String, result: String, name: String?, isError: Bool?)
+    /// Code execution tool call.
     case codeExecutionCall(id: String, code: String)
+    /// Result of code execution.
     case codeExecutionResult(callId: String, output: String, isError: Bool?)
+    /// Google Search tool call.
     case googleSearchCall(id: String)
+    /// Google Search tool results.
     case googleSearchResult(callId: String, results: [GoogleSearchResult])
+    /// URL context tool call.
     case urlContextCall(id: String, urls: [String])
+    /// URL context tool result.
     case urlContextResult(callId: String, content: String)
+    /// MCP server tool call.
     case mcpToolCall(id: String, name: String, arguments: String)
+    /// MCP server tool result.
     case mcpToolResult(callId: String, result: String)
+    /// File search tool call.
     case fileSearchCall(id: String)
+    /// File search tool results.
     case fileSearchResult(callId: String, results: [FileSearchResult])
+    /// Google Maps tool call.
     case googleMapsCall(id: String)
+    /// Google Maps tool result.
     case googleMapsResult(callId: String, result: String)
+    /// Unknown step type, ignored for forward compatibility.
     case unknown
 
     private enum CodingKeys: String, CodingKey {
@@ -576,13 +661,21 @@ private struct RawJSONKey: CodingKey {
 
 // MARK: - InteractionTool
 
+/// A tool the model can use during an interaction.
 public enum InteractionTool: Codable, Sendable {
+    /// Custom function tool executed locally via `ToolSession` or `Agent`.
     case function(name: String, description: String, parameters: JSONSchemaValue)
+    /// Server-side Python code execution.
     case codeExecution
+    /// Server-side Google Search.
     case googleSearch
+    /// Server-side URL fetching and parsing.
     case urlContext
+    /// Server-side file search across document stores.
     case fileSearch(storeNames: [String], topK: Int?, metadataFilter: String?)
+    /// Server-side Google Maps integration.
     case googleMaps(latitude: Double, longitude: Double, enableWidget: Bool?)
+    /// Server-side MCP tool invocation.
     case mcpServer
 
     private enum CodingKeys: String, CodingKey {
@@ -654,6 +747,7 @@ public enum InteractionTool: Codable, Sendable {
 
 public extension InteractionTool {
     /// Creates a `.function` tool from a `ToolDefinition` produced by the `@LLMTool` macro.
+    /// - Parameter definition: Tool definition from `@LLMTool`.
     init(_ definition: ToolDefinition) {
         self = .function(
             name: definition.name,
@@ -665,8 +759,11 @@ public extension InteractionTool {
 
 // MARK: - InteractionInput
 
+/// Input to an interaction, either a simple text prompt or a full steps array.
 public enum InteractionInput: Codable, Sendable {
+    /// Simple text prompt.
     case text(String)
+    /// Full conversation history as steps array.
     case steps([Step])
 
     public init(from decoder: any Decoder) throws {
@@ -689,14 +786,23 @@ public enum InteractionInput: Codable, Sendable {
 
 // MARK: - GenerationConfig
 
+/// Model generation parameters (sampling, output length, thinking, tool choice).
 public struct GenerationConfig: Codable, Sendable {
+    /// Sampling temperature (0.0–2.0).
     public var temperature: Double?
+    /// Nucleus sampling probability (0.0–1.0).
     public var topP: Double?
+    /// Maximum output tokens.
     public var maxOutputTokens: Int?
+    /// Random seed for deterministic sampling.
     public var seed: Int?
+    /// Stop sequences that halt generation.
     public var stopSequences: [String]?
+    /// Extended thinking depth level.
     public var thinkingLevel: ThinkingLevel?
+    /// Whether to include thinking summaries.
     public var thinkingSummaries: ThinkingSummaries?
+    /// Tool selection behavior.
     public var toolChoice: ToolChoiceConfig?
 
     public init(
@@ -722,10 +828,12 @@ public struct GenerationConfig: Codable, Sendable {
 
 // MARK: - ResponseFormat, ResponseDelivery, and AudioOutputMimeType
 
+/// How the model delivers response content (inline data or URI reference).
 public enum ResponseDelivery: String, Codable, Sendable {
     case inline, uri
 }
 
+/// Audio output MIME type for audio response format.
 public enum AudioOutputMimeType: String, Codable, Sendable {
     case mp3     = "audio/mp3"
     case oggOpus = "audio/ogg_opus"
@@ -735,9 +843,13 @@ public enum AudioOutputMimeType: String, Codable, Sendable {
     case mulaw   = "audio/mulaw"
 }
 
+/// Desired response format (text, image, or audio) with format-specific parameters.
 public enum ResponseFormat: Codable, Sendable {
+    /// Text output with optional MIME type and JSON schema constraint.
     case text(mimeType: String? = nil, schema: JSONSchemaValue? = nil)
+    /// Image output with MIME type, aspect ratio, size, and delivery mode.
     case image(mimeType: String, aspectRatio: String? = nil, imageSize: String? = nil, delivery: ResponseDelivery? = nil)
+    /// Audio output with MIME type, sample rate, bit rate, and delivery mode.
     case audio(mimeType: AudioOutputMimeType, sampleRate: Int? = nil, bitRate: Int? = nil, delivery: ResponseDelivery? = nil)
 
     private enum CodingKeys: String, CodingKey {
@@ -802,8 +914,11 @@ public enum ResponseFormat: Codable, Sendable {
 
 // MARK: - Network and Environment Configuration
 
+/// A network allowlist entry for remote environment configuration.
 public struct NetworkAllowlistEntry: Codable, Sendable {
+    /// Permitted domain.
     public let domain: String
+    /// Optional URL transformation rules.
     public let transform: [String: String]?
 
     public init(domain: String, transform: [String: String]? = nil) {
@@ -811,8 +926,11 @@ public struct NetworkAllowlistEntry: Codable, Sendable {
     }
 }
 
+/// Network access policy for remote code execution environments.
 public enum EnvironmentNetwork: Codable, Sendable {
+    /// Allow access only to specified domains.
     case allowlist([NetworkAllowlistEntry])
+    /// Disable all network access.
     case disabled
 
     private struct AllowlistWrapper: Codable {
@@ -840,9 +958,13 @@ public enum EnvironmentNetwork: Codable, Sendable {
     }
 }
 
+/// A file source for populating a remote code execution environment.
 public enum EnvironmentSource: Codable, Sendable {
+    /// Inline file content.
     case inline(target: String, content: String)
+    /// File from a repository.
     case repository(source: String, target: String)
+    /// File from Google Cloud Storage.
     case gcs(source: String, target: String)
 
     private enum CodingKeys: String, CodingKey {
@@ -892,8 +1014,11 @@ public enum EnvironmentSource: Codable, Sendable {
     }
 }
 
+/// Configuration for remote code execution environment (files and network access).
 public struct EnvironmentConfig: Codable, Sendable {
+    /// File sources to populate the environment.
     public let sources: [EnvironmentSource]?
+    /// Network access policy.
     public let network: EnvironmentNetwork?
 
     public init(sources: [EnvironmentSource]? = nil, network: EnvironmentNetwork? = nil) {
@@ -918,8 +1043,11 @@ public struct EnvironmentConfig: Codable, Sendable {
     }
 }
 
+/// Webhook configuration for background interaction notifications.
 public struct WebhookConfig: Codable, Sendable {
+    /// Notification endpoint URLs.
     public let notificationEndpoints: [String]
+    /// Optional metadata included in webhook payloads.
     public let userMetadata: [String: String]?
 
     public init(notificationEndpoints: [String], userMetadata: [String: String]? = nil) {
@@ -934,23 +1062,41 @@ public struct WebhookConfig: Codable, Sendable {
 
 // MARK: - InteractionRequest
 
+/// A request to the Interactions API.
 public struct InteractionRequest: Codable, Sendable {
+    /// Model identifier (e.g., "gemini-2.5-flash").
     public var model: String?
+    /// Named agent identifier (mutually exclusive with `model`).
     public var agent: String?
+    /// Input prompt or steps array.
     public var input: InteractionInput
+    /// System instruction for the model.
     public var systemInstruction: String?
+    /// Tools available to the model.
     public var tools: [InteractionTool]?
+    /// Whether to stream the response.
     public var stream: Bool?
+    /// Whether to store the interaction for resumption via `previousInteractionId`.
     public var store: Bool?
+    /// Whether to run the interaction in the background.
     public var background: Bool?
+    /// Generation parameters (temperature, topP, maxOutputTokens, etc.).
     public var generationConfig: GenerationConfig?
+    /// Desired response format (text, image, audio).
     public var responseFormat: ResponseFormat?
+    /// Allowed response modalities.
     public var responseModalities: [ResponseModality]?
+    /// Previous interaction ID for conversation chaining.
     public var previousInteractionId: String?
+    /// Environment configuration for code execution tools.
     public var environment: EnvironmentConfig?
+    /// Webhook configuration for background interactions.
     public var webhookConfig: WebhookConfig?
+    /// Service tier for prioritization and rate limiting.
     public var serviceTier: ServiceTier?
 
+    /// Creates a new interaction request.
+    /// - Parameter input: The input prompt or steps array.
     public init(input: InteractionInput) {
         self.input = input
     }
@@ -970,17 +1116,29 @@ public struct InteractionRequest: Codable, Sendable {
 
 // MARK: - Usage
 
+/// Token usage statistics for an interaction.
 public struct Usage: Codable, Sendable {
+    /// Total input tokens.
     public let totalInputTokens: Int
+    /// Total output tokens.
     public let totalOutputTokens: Int
+    /// Total extended thinking tokens.
     public let totalThoughtTokens: Int
+    /// Total cached tokens.
     public let totalCachedTokens: Int
+    /// Total tool use tokens.
     public let totalToolUseTokens: Int
+    /// Total of all token types.
     public let totalTokens: Int
+    /// Input token counts by modality.
     public let inputTokensByModality: [ModalityTokens]
+    /// Output token counts by modality.
     public let outputTokensByModality: [ModalityTokens]
+    /// Cached token counts by modality.
     public let cachedTokensByModality: [ModalityTokens]
+    /// Tool use token counts by modality.
     public let toolUseTokensByModality: [ModalityTokens]
+    /// Grounding tool invocation counts.
     public let groundingToolCount: [GroundingToolCount]
 
     public init(
@@ -1037,16 +1195,27 @@ public struct Usage: Codable, Sendable {
 
 // MARK: - Interaction
 
+/// A completed or in-progress interaction with the Gemini API.
 public struct Interaction: Codable, Sendable {
+    /// Unique interaction identifier.
     public let id: String
+    /// Object type, always `"interaction"`.
     public let object: String
+    /// Model identifier (e.g., "gemini-2.5-flash").
     public let model: String?
+    /// Named agent identifier.
     public let agent: String?
+    /// Lifecycle status.
     public let status: InteractionStatus
+    /// Creation timestamp (ISO 8601).
     public let created: String?
+    /// Last update timestamp (ISO 8601).
     public let updated: String?
+    /// Conversation steps array.
     public let steps: [Step]
+    /// Token usage statistics.
     public let usage: Usage?
+    /// Service tier used for this interaction.
     public let serviceTier: ServiceTier?
 
     public init(id: String, object: String = "interaction", model: String? = nil,
@@ -1065,6 +1234,7 @@ public struct Interaction: Codable, Sendable {
         self.serviceTier = serviceTier
     }
 
+    /// The last text output from the model, or `nil` if no text was produced.
     public var outputText: String? {
         for step in steps.reversed() {
             if case .modelOutput(let content) = step {
@@ -1076,8 +1246,10 @@ public struct Interaction: Codable, Sendable {
         return nil
     }
 
+    /// Whether the interaction requires action (tool results or user input).
     public var requiresAction: Bool { status == .requiresAction }
 
+    /// All function call steps in the interaction.
     public var functionCalls: [Step] {
         steps.filter { step in
             if case .functionCall = step { return true }
@@ -1085,6 +1257,7 @@ public struct Interaction: Codable, Sendable {
         }
     }
 
+    /// Whether the interaction has reached a terminal status.
     public var isComplete: Bool {
         switch status {
         case .completed, .failed, .cancelled, .incomplete, .budgetExceeded: return true
@@ -1115,23 +1288,36 @@ public struct Interaction: Codable, Sendable {
 // MARK: - Convenience Constructors
 
 /// Creates a `.userInput` step with a single text content item.
+/// - Parameter text: The user's text input.
+/// - Returns: A `.userInput` step.
 public func User(_ text: String) -> Step {
     .userInput(content: [.text(text, annotations: nil)])
 }
 
 /// Creates a `.userInput` step with the given content array.
+/// - Parameter content: Array of content items (text, images, documents, video).
+/// - Returns: A `.userInput` step.
 public func User(_ content: [Content]) -> Step {
     .userInput(content: content)
 }
 
 /// Creates a `.functionResult` step.
+/// - Parameter callId: The function call ID this result corresponds to.
+/// - Parameter result: The function execution result (JSON string or plain text).
+/// - Parameter isError: Whether the function execution failed.
+/// - Returns: A `.functionResult` step.
 public func FunctionOutput(callId: String, result: String, isError: Bool = false) -> Step {
     .functionResult(callId: callId, result: result, name: nil, isError: isError)
 }
 
 // MARK: - InteractionConfigParameter
 
+/// A parameter that modifies an `InteractionRequest`.
+///
+/// Implemented by all parameter structs (`Temperature`, `TopP`, `SystemInstruction`, etc.).
 public protocol InteractionConfigParameter: Sendable {
+    /// Applies this parameter to a mutable interaction request.
+    /// - Parameter request: The request to modify.
     func apply(to request: inout InteractionRequest)
 }
 
@@ -1141,6 +1327,7 @@ private extension InteractionRequest {
     }
 }
 
+/// Sampling temperature. Values outside 0.0–2.0 are silently ignored.
 public struct Temperature: InteractionConfigParameter {
     private let value: Double
     public init(_ value: Double) { self.value = value }
@@ -1151,6 +1338,7 @@ public struct Temperature: InteractionConfigParameter {
     }
 }
 
+/// Nucleus sampling probability. Values outside 0.0–1.0 are silently ignored.
 public struct TopP: InteractionConfigParameter {
     private let value: Double
     public init(_ value: Double) { self.value = value }
@@ -1161,6 +1349,7 @@ public struct TopP: InteractionConfigParameter {
     }
 }
 
+/// Maximum output tokens. Values ≤ 0 are silently ignored.
 public struct MaxOutputTokens: InteractionConfigParameter {
     private let value: Int
     public init(_ value: Int) { self.value = value }
@@ -1171,6 +1360,7 @@ public struct MaxOutputTokens: InteractionConfigParameter {
     }
 }
 
+/// Random seed for deterministic sampling.
 public struct Seed: InteractionConfigParameter {
     private let value: Int
     public init(_ value: Int) { self.value = value }
@@ -1180,6 +1370,7 @@ public struct Seed: InteractionConfigParameter {
     }
 }
 
+/// System instruction for the model. Empty strings are silently ignored.
 public struct SystemInstruction: InteractionConfigParameter {
     private let value: String
     public init(_ value: String) { self.value = value }
@@ -1189,6 +1380,9 @@ public struct SystemInstruction: InteractionConfigParameter {
     }
 }
 
+/// Previous interaction ID for conversation chaining. Empty strings are silently ignored.
+///
+/// Do NOT set this manually when using `ToolSession` or `Agent` — both manage chaining automatically.
 public struct PreviousInteractionId: InteractionConfigParameter {
     private let value: String
     public init(_ value: String) { self.value = value }
@@ -1198,24 +1392,28 @@ public struct PreviousInteractionId: InteractionConfigParameter {
     }
 }
 
+/// Whether to store the interaction for resumption via `previousInteractionId`.
 public struct Store: InteractionConfigParameter {
     private let value: Bool
     public init(_ value: Bool) { self.value = value }
     public func apply(to request: inout InteractionRequest) { request.store = value }
 }
 
+/// Whether to run the interaction in the background.
 public struct Background: InteractionConfigParameter {
     private let value: Bool
     public init(_ value: Bool) { self.value = value }
     public func apply(to request: inout InteractionRequest) { request.background = value }
 }
 
+/// Service tier for prioritization and rate limiting.
 public struct ServiceTierParam: InteractionConfigParameter {
     private let value: ServiceTier
     public init(_ value: ServiceTier) { self.value = value }
     public func apply(to request: inout InteractionRequest) { request.serviceTier = value }
 }
 
+/// Extended thinking depth level.
 public struct ThinkingLevelParam: InteractionConfigParameter {
     private let value: ThinkingLevel
     public init(_ value: ThinkingLevel) { self.value = value }
@@ -1225,6 +1423,7 @@ public struct ThinkingLevelParam: InteractionConfigParameter {
     }
 }
 
+/// Whether to include summaries of extended thinking steps.
 public struct ThinkingSummariesParam: InteractionConfigParameter {
     private let value: ThinkingSummaries
     public init(_ value: ThinkingSummaries) { self.value = value }
@@ -1234,12 +1433,14 @@ public struct ThinkingSummariesParam: InteractionConfigParameter {
     }
 }
 
+/// Desired response format (text, image, or audio).
 public struct ResponseFormatParam: InteractionConfigParameter {
     private let value: ResponseFormat
     public init(_ value: ResponseFormat) { self.value = value }
     public func apply(to request: inout InteractionRequest) { request.responseFormat = value }
 }
 
+/// Allowed response modalities. Empty arrays are silently ignored.
 public struct ResponseModalitiesParam: InteractionConfigParameter {
     private let value: [ResponseModality]
     public init(_ value: [ResponseModality]) { self.value = value }
@@ -1249,24 +1450,30 @@ public struct ResponseModalitiesParam: InteractionConfigParameter {
     }
 }
 
+/// Maximum tool loop iterations. Consumed by `ToolSession`, not sent to the API.
 public struct MaxToolCalls: InteractionConfigParameter {
+    /// The maximum iteration count.
     public let value: Int
     public init(_ value: Int) { self.value = value }
     public func apply(to request: inout InteractionRequest) { /* consumed by ToolSession */ }
 }
 
+/// Environment configuration for remote code execution.
 public struct EnvironmentParam: InteractionConfigParameter {
     private let value: EnvironmentConfig
     public init(_ value: EnvironmentConfig) { self.value = value }
     public func apply(to request: inout InteractionRequest) { request.environment = value }
 }
 
+/// HTTP request timeout. Consumed by `InteractionsClient`, not sent to the API.
 public struct RequestTimeout: InteractionConfigParameter {
+    /// The timeout interval in seconds.
     public let value: TimeInterval
     public init(_ value: TimeInterval) { self.value = value }
     public func apply(to request: inout InteractionRequest) { /* consumed by client */ }
 }
 
+/// Webhook configuration for background interaction notifications.
 public struct WebhookConfigParam: InteractionConfigParameter {
     private let value: WebhookConfig
     public init(_ value: WebhookConfig) { self.value = value }
@@ -1275,6 +1482,9 @@ public struct WebhookConfigParam: InteractionConfigParameter {
 
 // MARK: - Result Builders
 
+/// Result builder for `InteractionConfigParameter` arrays.
+///
+/// Used by `ToolSession` and `Agent` to accept config DSL.
 @resultBuilder
 public struct InteractionConfigBuilder {
     public static func buildBlock(_ components: [any InteractionConfigParameter]...) -> [any InteractionConfigParameter] {
@@ -1297,6 +1507,9 @@ public struct InteractionConfigBuilder {
     }
 }
 
+/// Result builder for `Step` arrays.
+///
+/// Used to construct conversation steps with a declarative DSL.
 @resultBuilder
 public struct StepsBuilder {
     public static func buildBlock(_ components: [Step]...) -> [Step] { components.flatMap { $0 } }
@@ -1307,6 +1520,9 @@ public struct StepsBuilder {
     public static func buildExpression(_ expression: Step) -> [Step] { [expression] }
 }
 
+/// Result builder for `InteractionTool` arrays.
+///
+/// Used by `ToolSession` and `Agent` to accept tools DSL.
 @resultBuilder
 public struct ToolsBuilder {
     public static func buildBlock(_ components: [InteractionTool]...) -> [InteractionTool] { components.flatMap { $0 } }
@@ -1319,12 +1535,18 @@ public struct ToolsBuilder {
 
 // MARK: - InteractionsClient
 
+/// A client for the Gemini Interactions API.
+///
+/// Safe to share across tasks. Handles authentication, encoding, error wrapping, and HTTP transport.
 public actor InteractionsClient {
     private let apiKey: String
     private let apiRevision: String
     let session: URLSession
     private let baseURL: URL
 
+    /// Creates a new Interactions API client.
+    /// - Parameter apiKey: Your Gemini API key.
+    /// - Parameter apiRevision: API revision date (default: "2026-05-20").
     public init(apiKey: String, apiRevision: String = "2026-05-20") {
         self.apiKey = apiKey
         self.apiRevision = apiRevision
@@ -1404,6 +1626,9 @@ public actor InteractionsClient {
         }
     }
 
+    /// Sends an interaction request and returns the completed interaction.
+    /// - Parameter request: The interaction request to send.
+    /// - Returns: The decoded interaction response.
     public func send(_ request: InteractionRequest) async throws -> Interaction {
         let body = try encode(request)
         let urlRequest = makeRequest(url: interactionsURL(), method: "POST", body: body)
@@ -1411,17 +1636,24 @@ public actor InteractionsClient {
         return try decode(Interaction.self, from: data)
     }
 
+    /// Retrieves an interaction by ID.
+    /// - Parameter id: The interaction ID.
+    /// - Returns: The decoded interaction.
     public func get(id: String) async throws -> Interaction {
         let urlRequest = makeRequest(url: interactionURL(id: id), method: "GET")
         let data = try await execute(urlRequest)
         return try decode(Interaction.self, from: data)
     }
 
+    /// Deletes a stored interaction.
+    /// - Parameter id: The interaction ID.
     public func delete(id: String) async throws {
         let urlRequest = makeRequest(url: interactionURL(id: id), method: "DELETE")
         _ = try await execute(urlRequest)
     }
 
+    /// Cancels a running background interaction.
+    /// - Parameter id: The interaction ID.
     public func cancel(id: String) async throws {
         let cancelURL = interactionURL(id: id).appendingPathComponent("cancel")
         let urlRequest = makeRequest(url: cancelURL, method: "POST")
