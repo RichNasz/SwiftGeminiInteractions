@@ -33,6 +33,7 @@ No Foundation errors escape the public API. Every catch site wraps into `GeminiI
 | `Sources/SwiftGeminiInteractions/Core.swift` | always | All types, config params, result builders, InteractionsClient (send/get/delete/cancel) |
 | `Sources/SwiftGeminiInteractions/Streaming.swift` | always | SSE parser, stream(), resumeStream(), InteractionStreamEvent, InteractionStreamDelta |
 | `Sources/SwiftGeminiInteractions/BackgroundPolling.swift` | always | poll() |
+| `Sources/SwiftGeminiInteractions/FileSearchStores.swift` | always | FileSearchStore, FileSearchDocument, CustomMetadata, DocumentState, Operation; InteractionsClient extension (store CRUD, document list/delete, upload) |
 | `Sources/SwiftGeminiInteractions/ToolSession.swift` | `#if ToolSession` | ToolSession, ToolSessionResult, ToolCallLogEntry, ToolSessionEvent |
 | `Sources/SwiftGeminiInteractions/Agent.swift` | `#if Agent` | Agent, AgentTool, AgentToolBuilder, TranscriptEntry |
 
@@ -47,7 +48,7 @@ Two traits gate the optional orchestration subsystems:
 
 `Full` (composite, default) enables both. Consumers who declare `traits: []` get only Core + Streaming + BackgroundPolling.
 
-`Streaming.swift` and `BackgroundPolling.swift` are NOT trait-gated. Streaming is small (~250 lines) and universally needed; polling is a single function. The trait-gating cost (source guards, consumer config) is not justified for code that small. See `docs/traits.md` for the full rationale.
+`Streaming.swift`, `BackgroundPolling.swift`, and `FileSearchStores.swift` are NOT trait-gated. Streaming is small (~250 lines) and universally needed; polling is a single function; file search store management is a natural extension of `InteractionsClient` (same auth, same base URL) with no dependency on ToolSession or Agent. See `docs/traits.md` for the full rationale.
 
 The Spec files in `Spec/` should be updated to reflect the new file boundaries if they reference the old `SwiftGeminiInteractions.swift` monolith.
 
@@ -66,3 +67,4 @@ All spec files in `Spec/` must be consulted during code generation.
 | `how-toolloop.md` | Tool loop algorithm, chaining, parallel execution |
 | `how-polling.md` | Background poll algorithm |
 | `how-errors.md` | Error wrapping strategy |
+| `what-filesearchstores.md` | Types in FileSearchStores.swift |

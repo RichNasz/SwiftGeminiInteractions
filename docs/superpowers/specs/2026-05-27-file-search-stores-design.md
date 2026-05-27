@@ -1,7 +1,7 @@
 # File Search Store Management — Design Spec
 
 **Date:** 2026-05-27
-**Status:** Draft
+**Status:** Implemented
 
 ## Summary
 
