@@ -1542,7 +1542,7 @@ public actor InteractionsClient {
     private let apiKey: String
     private let apiRevision: String
     let session: URLSession
-    private let baseURL: URL
+    let baseURL: URL
 
     /// Creates a new Interactions API client.
     /// - Parameter apiKey: Your Gemini API key.
@@ -1569,7 +1569,7 @@ public actor InteractionsClient {
         interactionsURL().appendingPathComponent(id)
     }
 
-    private func headers() -> [String: String] {
+    func headers() -> [String: String] {
         [
             "x-goog-api-key": apiKey,
             "Api-Revision": apiRevision
@@ -1589,7 +1589,7 @@ public actor InteractionsClient {
         return urlRequest
     }
 
-    private func execute(_ urlRequest: URLRequest) async throws -> Data {
+    func execute(_ urlRequest: URLRequest) async throws -> Data {
         let (data, response): (Data, URLResponse)
         do {
             (data, response) = try await session.data(for: urlRequest)
@@ -1610,7 +1610,28 @@ public actor InteractionsClient {
         }
     }
 
-    private func decode<T: Decodable>(_ type: T.Type, from data: Data) throws -> T {
+    func executeReturningResponse(_ urlRequest: URLRequest) async throws -> (Data, HTTPURLResponse) {
+        let (data, response): (Data, URLResponse)
+        do {
+            (data, response) = try await session.data(for: urlRequest)
+        } catch let urlError as URLError {
+            throw GeminiInteractionsError.networkError(urlError)
+        }
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw GeminiInteractionsError.httpError(statusCode: 0, body: "No HTTP response")
+        }
+        switch httpResponse.statusCode {
+        case 200...299:
+            return (data, httpResponse)
+        case 429:
+            throw GeminiInteractionsError.rateLimitExceeded
+        default:
+            let body = String(data: data, encoding: .utf8) ?? ""
+            throw GeminiInteractionsError.httpError(statusCode: httpResponse.statusCode, body: body)
+        }
+    }
+
+    func decode<T: Decodable>(_ type: T.Type, from data: Data) throws -> T {
         do {
             return try JSONDecoder().decode(type, from: data)
         } catch let decodingError as DecodingError {
