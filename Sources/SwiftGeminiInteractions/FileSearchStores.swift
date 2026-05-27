@@ -177,6 +177,37 @@ extension InteractionsClient {
     }
 }
 
+// MARK: - Document Management
+
+extension InteractionsClient {
+
+    public func listDocuments(inStore storeName: String) async throws -> [FileSearchDocument] {
+        var allDocs: [FileSearchDocument] = []
+        var pageToken: String? = nil
+        repeat {
+            var url = documentsURL(storeName: storeName)
+            var queryItems = [URLQueryItem(name: "pageSize", value: "20")]
+            if let pageToken {
+                queryItems.append(URLQueryItem(name: "pageToken", value: pageToken))
+            }
+            url = url.appending(queryItems: queryItems)
+            let urlRequest = makeRequest(url: url, method: "GET")
+            let data = try await execute(urlRequest)
+            let page = try decode(FileSearchDocumentListResponse.self, from: data)
+            allDocs.append(contentsOf: page.documents ?? [])
+            pageToken = page.nextPageToken
+        } while pageToken != nil
+        return allDocs
+    }
+
+    public func deleteDocument(name: String, force: Bool = false) async throws {
+        var url = documentURL(name: name)
+        url = url.appending(queryItems: [URLQueryItem(name: "force", value: "\(force)")])
+        let urlRequest = makeRequest(url: url, method: "DELETE")
+        _ = try await execute(urlRequest)
+    }
+}
+
 // MARK: - List Response Wrappers
 
 struct FileSearchStoreListResponse: Codable, Sendable {
@@ -185,6 +216,16 @@ struct FileSearchStoreListResponse: Codable, Sendable {
 
     private enum CodingKeys: String, CodingKey {
         case fileSearchStores
+        case nextPageToken
+    }
+}
+
+struct FileSearchDocumentListResponse: Codable, Sendable {
+    let documents: [FileSearchDocument]?
+    let nextPageToken: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case documents
         case nextPageToken
     }
 }

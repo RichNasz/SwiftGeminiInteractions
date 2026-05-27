@@ -201,4 +201,68 @@ final class FileSearchStoreTests: XCTestCase {
 
         XCTAssertTrue(capturedURL?.absoluteString.contains("force=false") ?? false)
     }
+
+    // MARK: - Document Management
+
+    func testListDocumentsPaginated() async throws {
+        let page1 = """
+        {
+            "documents": [{"name": "fileSearchStores/s-1/documents/d-1", "state": "STATE_ACTIVE"}],
+            "nextPageToken": "tok-2"
+        }
+        """.data(using: .utf8)!
+        let page2 = """
+        {
+            "documents": [{"name": "fileSearchStores/s-1/documents/d-2", "state": "STATE_ACTIVE"}]
+        }
+        """.data(using: .utf8)!
+
+        var callCount = 0
+        MockURLProtocol.requestHandler = { request in
+            callCount += 1
+            let data = callCount == 1 ? page1 : page2
+            let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+            return (response, data)
+        }
+
+        let client = makeTestClient()
+        let docs = try await client.listDocuments(inStore: "fileSearchStores/s-1")
+
+        XCTAssertEqual(docs.count, 2)
+        XCTAssertEqual(docs[0].name, "fileSearchStores/s-1/documents/d-1")
+        XCTAssertEqual(docs[1].name, "fileSearchStores/s-1/documents/d-2")
+        XCTAssertEqual(callCount, 2)
+    }
+
+    func testListDocumentsEmpty() async throws {
+        let json = """
+        {}
+        """.data(using: .utf8)!
+
+        MockURLProtocol.requestHandler = { request in
+            let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+            return (response, json)
+        }
+
+        let client = makeTestClient()
+        let docs = try await client.listDocuments(inStore: "fileSearchStores/s-1")
+
+        XCTAssertEqual(docs.count, 0)
+    }
+
+    func testDeleteDocument() async throws {
+        var capturedRequest: URLRequest?
+        MockURLProtocol.requestHandler = { request in
+            capturedRequest = request
+            let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+            return (response, "{}".data(using: .utf8)!)
+        }
+
+        let client = makeTestClient()
+        try await client.deleteDocument(name: "fileSearchStores/s-1/documents/d-1", force: true)
+
+        XCTAssertEqual(capturedRequest?.httpMethod, "DELETE")
+        XCTAssertTrue(capturedRequest?.url?.absoluteString.contains("documents/d-1") ?? false)
+        XCTAssertTrue(capturedRequest?.url?.absoluteString.contains("force=true") ?? false)
+    }
 }
