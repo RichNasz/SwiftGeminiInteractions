@@ -97,3 +97,94 @@ struct Operation: Codable, Sendable {
         }
     }
 }
+
+// MARK: - URL Helpers
+
+extension InteractionsClient {
+
+    func fileSearchStoresURL() -> URL {
+        baseURL.appendingPathComponent("v1beta/fileSearchStores")
+    }
+
+    func fileSearchStoreURL(name: String) -> URL {
+        baseURL.appendingPathComponent("v1beta").appendingPathComponent(name)
+    }
+
+    func documentsURL(storeName: String) -> URL {
+        baseURL.appendingPathComponent("v1beta").appendingPathComponent(storeName).appendingPathComponent("documents")
+    }
+
+    func documentURL(name: String) -> URL {
+        baseURL.appendingPathComponent("v1beta").appendingPathComponent(name)
+    }
+
+    func uploadInitiateURL(storeName: String) -> URL {
+        baseURL.appendingPathComponent("upload/v1beta").appendingPathComponent(storeName + ":uploadToFileSearchStore")
+    }
+
+    func operationURL(name: String) -> URL {
+        baseURL.appendingPathComponent("v1beta").appendingPathComponent(name)
+    }
+}
+
+// MARK: - Store CRUD
+
+extension InteractionsClient {
+
+    public func createFileSearchStore(
+        displayName: String? = nil,
+        embeddingModel: String? = nil
+    ) async throws -> FileSearchStore {
+        var bodyDict: [String: String] = [:]
+        if let displayName { bodyDict["displayName"] = displayName }
+        if let embeddingModel { bodyDict["embeddingModel"] = embeddingModel }
+        let body = try encode(bodyDict)
+        let urlRequest = makeRequest(url: fileSearchStoresURL(), method: "POST", body: body)
+        let data = try await execute(urlRequest)
+        return try decode(FileSearchStore.self, from: data)
+    }
+
+    public func listFileSearchStores() async throws -> [FileSearchStore] {
+        var allStores: [FileSearchStore] = []
+        var pageToken: String? = nil
+        repeat {
+            var url = fileSearchStoresURL()
+            var queryItems = [URLQueryItem(name: "pageSize", value: "20")]
+            if let pageToken {
+                queryItems.append(URLQueryItem(name: "pageToken", value: pageToken))
+            }
+            url = url.appending(queryItems: queryItems)
+            let urlRequest = makeRequest(url: url, method: "GET")
+            let data = try await execute(urlRequest)
+            let page = try decode(FileSearchStoreListResponse.self, from: data)
+            allStores.append(contentsOf: page.fileSearchStores ?? [])
+            pageToken = page.nextPageToken
+        } while pageToken != nil
+        return allStores
+    }
+
+    public func getFileSearchStore(name: String) async throws -> FileSearchStore {
+        let urlRequest = makeRequest(url: fileSearchStoreURL(name: name), method: "GET")
+        let data = try await execute(urlRequest)
+        return try decode(FileSearchStore.self, from: data)
+    }
+
+    public func deleteFileSearchStore(name: String, force: Bool = false) async throws {
+        var url = fileSearchStoreURL(name: name)
+        url = url.appending(queryItems: [URLQueryItem(name: "force", value: "\(force)")])
+        let urlRequest = makeRequest(url: url, method: "DELETE")
+        _ = try await execute(urlRequest)
+    }
+}
+
+// MARK: - List Response Wrappers
+
+struct FileSearchStoreListResponse: Codable, Sendable {
+    let fileSearchStores: [FileSearchStore]?
+    let nextPageToken: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case fileSearchStores
+        case nextPageToken
+    }
+}

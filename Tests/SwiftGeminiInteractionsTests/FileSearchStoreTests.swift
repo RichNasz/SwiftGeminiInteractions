@@ -90,4 +90,115 @@ final class FileSearchStoreTests: XCTestCase {
         XCTAssertNil(meta.stringValue)
         XCTAssertNil(meta.numericValue)
     }
+
+    // MARK: - Store CRUD
+
+    func testCreateFileSearchStore() async throws {
+        let responseJSON = """
+        {
+            "name": "fileSearchStores/new-store-abc",
+            "display_name": "New Store",
+            "create_time": "2026-05-27T10:00:00Z",
+            "embedding_model": "models/gemini-embedding-2"
+        }
+        """.data(using: .utf8)!
+
+        var capturedRequest: URLRequest?
+        MockURLProtocol.requestHandler = { request in
+            capturedRequest = request
+            let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+            return (response, responseJSON)
+        }
+
+        let client = makeTestClient()
+        let store = try await client.createFileSearchStore(displayName: "New Store", embeddingModel: "models/gemini-embedding-2")
+
+        XCTAssertEqual(store.name, "fileSearchStores/new-store-abc")
+        XCTAssertEqual(store.displayName, "New Store")
+        XCTAssertEqual(capturedRequest?.httpMethod, "POST")
+        XCTAssertTrue(capturedRequest?.url?.absoluteString.contains("fileSearchStores") ?? false)
+
+        let body = requestBodyData(from: capturedRequest!)
+        let bodyJSON = try JSONSerialization.jsonObject(with: body!) as! [String: String]
+        XCTAssertEqual(bodyJSON["displayName"], "New Store")
+        XCTAssertEqual(bodyJSON["embeddingModel"], "models/gemini-embedding-2")
+    }
+
+    func testListFileSearchStoresPaginated() async throws {
+        let page1 = """
+        {
+            "fileSearchStores": [{"name": "fileSearchStores/s-1"}],
+            "nextPageToken": "token-2"
+        }
+        """.data(using: .utf8)!
+        let page2 = """
+        {
+            "fileSearchStores": [{"name": "fileSearchStores/s-2"}]
+        }
+        """.data(using: .utf8)!
+
+        var callCount = 0
+        MockURLProtocol.requestHandler = { request in
+            callCount += 1
+            let data = callCount == 1 ? page1 : page2
+            let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+            return (response, data)
+        }
+
+        let client = makeTestClient()
+        let stores = try await client.listFileSearchStores()
+
+        XCTAssertEqual(stores.count, 2)
+        XCTAssertEqual(stores[0].name, "fileSearchStores/s-1")
+        XCTAssertEqual(stores[1].name, "fileSearchStores/s-2")
+        XCTAssertEqual(callCount, 2)
+    }
+
+    func testGetFileSearchStore() async throws {
+        let responseJSON = """
+        {"name": "fileSearchStores/s-1", "display_name": "Store One"}
+        """.data(using: .utf8)!
+
+        var capturedURL: URL?
+        MockURLProtocol.requestHandler = { request in
+            capturedURL = request.url
+            let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+            return (response, responseJSON)
+        }
+
+        let client = makeTestClient()
+        let store = try await client.getFileSearchStore(name: "fileSearchStores/s-1")
+
+        XCTAssertEqual(store.name, "fileSearchStores/s-1")
+        XCTAssertTrue(capturedURL?.absoluteString.contains("fileSearchStores/s-1") ?? false)
+    }
+
+    func testDeleteFileSearchStore() async throws {
+        var capturedRequest: URLRequest?
+        MockURLProtocol.requestHandler = { request in
+            capturedRequest = request
+            let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+            return (response, "{}".data(using: .utf8)!)
+        }
+
+        let client = makeTestClient()
+        try await client.deleteFileSearchStore(name: "fileSearchStores/s-1", force: true)
+
+        XCTAssertEqual(capturedRequest?.httpMethod, "DELETE")
+        XCTAssertTrue(capturedRequest?.url?.absoluteString.contains("force=true") ?? false)
+    }
+
+    func testDeleteFileSearchStoreDefaultForce() async throws {
+        var capturedURL: URL?
+        MockURLProtocol.requestHandler = { request in
+            capturedURL = request.url
+            let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+            return (response, "{}".data(using: .utf8)!)
+        }
+
+        let client = makeTestClient()
+        try await client.deleteFileSearchStore(name: "fileSearchStores/s-1")
+
+        XCTAssertTrue(capturedURL?.absoluteString.contains("force=false") ?? false)
+    }
 }
