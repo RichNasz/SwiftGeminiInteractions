@@ -15,14 +15,14 @@ final class FileSearchStoreTests: XCTestCase {
         let json = """
         {
             "name": "fileSearchStores/my-store-123",
-            "displayName": "My Store",
-            "createTime": "2026-05-27T10:00:00Z",
-            "updateTime": "2026-05-27T10:00:00Z",
-            "activeDocumentsCount": "5",
-            "pendingDocumentsCount": "0",
-            "failedDocumentsCount": "1",
-            "sizeBytes": "1024",
-            "embeddingModel": "models/gemini-embedding-2"
+            "display_name": "My Store",
+            "create_time": "2026-05-27T10:00:00Z",
+            "update_time": "2026-05-27T10:00:00Z",
+            "active_documents_count": "5",
+            "pending_documents_count": "0",
+            "failed_documents_count": "1",
+            "size_bytes": "1024",
+            "embedding_model": "models/gemini-embedding-2"
         }
         """.data(using: .utf8)!
         let store = try JSONDecoder().decode(FileSearchStore.self, from: json)
@@ -48,16 +48,16 @@ final class FileSearchStoreTests: XCTestCase {
         let json = """
         {
             "name": "fileSearchStores/s-1/documents/doc-1",
-            "displayName": "readme.txt",
-            "customMetadata": [
-                {"key": "author", "stringValue": "Alice"},
-                {"key": "year", "numericValue": 2026}
+            "display_name": "readme.txt",
+            "custom_metadata": [
+                {"key": "author", "string_value": "Alice"},
+                {"key": "year", "numeric_value": 2026}
             ],
-            "createTime": "2026-05-27T10:00:00Z",
-            "updateTime": "2026-05-27T10:00:00Z",
+            "create_time": "2026-05-27T10:00:00Z",
+            "update_time": "2026-05-27T10:00:00Z",
             "state": "STATE_ACTIVE",
-            "sizeBytes": "512",
-            "mimeType": "text/plain"
+            "size_bytes": "512",
+            "mime_type": "text/plain"
         }
         """.data(using: .utf8)!
         let doc = try JSONDecoder().decode(FileSearchDocument.self, from: json)
@@ -82,7 +82,7 @@ final class FileSearchStoreTests: XCTestCase {
 
     func testDecodeCustomMetadataStringList() throws {
         let json = """
-        {"key": "tags", "stringListValue": {"values": ["swift", "api"]}}
+        {"key": "tags", "string_list_value": {"values": ["swift", "api"]}}
         """.data(using: .utf8)!
         let meta = try JSONDecoder().decode(CustomMetadata.self, from: json)
         XCTAssertEqual(meta.key, "tags")
