@@ -265,4 +265,143 @@ final class FileSearchStoreTests: XCTestCase {
         XCTAssertTrue(capturedRequest?.url?.absoluteString.contains("documents/d-1") ?? false)
         XCTAssertTrue(capturedRequest?.url?.absoluteString.contains("force=true") ?? false)
     }
+
+    // MARK: - Upload
+
+    func testUploadToFileSearchStore() async throws {
+        let operationJSON = """
+        {"name": "fileSearchStores/s-1/upload/operations/op-1", "done": false}
+        """.data(using: .utf8)!
+        let doneOperationJSON = """
+        {
+            "name": "fileSearchStores/s-1/upload/operations/op-1",
+            "done": true,
+            "response": {
+                "@type": "type.googleapis.com/google.ai.generativelanguage.v1beta.Document",
+                "name": "fileSearchStores/s-1/documents/doc-new",
+                "display_name": "test.txt",
+                "state": "STATE_ACTIVE",
+                "mime_type": "text/plain"
+            }
+        }
+        """.data(using: .utf8)!
+
+        let uploadURL = "https://storage.googleapis.com/upload/abc123"
+        var requestIndex = 0
+        MockURLProtocol.requestHandler = { request in
+            requestIndex += 1
+            switch requestIndex {
+            case 1:
+                // Step 1: Initiate upload — return upload URL in header
+                let response = HTTPURLResponse(
+                    url: request.url!,
+                    statusCode: 200,
+                    httpVersion: nil,
+                    headerFields: ["x-goog-upload-url": uploadURL]
+                )!
+                return (response, "{}".data(using: .utf8)!)
+            case 2:
+                // Step 2: Upload bytes — return operation
+                XCTAssertEqual(request.url?.absoluteString, uploadURL)
+                XCTAssertEqual(request.value(forHTTPHeaderField: "X-Goog-Upload-Command"), "upload, finalize")
+                let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+                return (response, operationJSON)
+            case 3:
+                // Step 3: Poll — still not done
+                let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+                return (response, operationJSON)
+            default:
+                // Step 3 again: Poll — done
+                let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+                return (response, doneOperationJSON)
+            }
+        }
+
+        let client = makeTestClient()
+        let doc = try await client.uploadToFileSearchStore(
+            storeName: "fileSearchStores/s-1",
+            data: "hello world".data(using: .utf8)!,
+            mimeType: "text/plain",
+            displayName: "test.txt",
+            pollInterval: .milliseconds(10)
+        )
+
+        XCTAssertEqual(doc.name, "fileSearchStores/s-1/documents/doc-new")
+        XCTAssertEqual(doc.displayName, "test.txt")
+        XCTAssertEqual(doc.state, .active)
+        XCTAssertEqual(requestIndex, 4)
+    }
+
+    func testUploadInitiateHeaders() async throws {
+        var capturedRequest: URLRequest?
+        MockURLProtocol.requestHandler = { request in
+            if capturedRequest == nil { capturedRequest = request }
+            let response = HTTPURLResponse(
+                url: request.url!,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: ["x-goog-upload-url": "https://example.com/upload"]
+            )!
+            let doneOp = """
+            {
+                "name": "op-1", "done": true,
+                "response": {"name": "fileSearchStores/s/documents/d", "state": "STATE_ACTIVE"}
+            }
+            """.data(using: .utf8)!
+            return (response, doneOp)
+        }
+
+        let client = makeTestClient()
+        let fileData = Data(repeating: 0x41, count: 100)
+        _ = try await client.uploadToFileSearchStore(
+            storeName: "fileSearchStores/s-1",
+            data: fileData,
+            mimeType: "application/pdf",
+            pollInterval: .milliseconds(10)
+        )
+
+        XCTAssertEqual(capturedRequest?.value(forHTTPHeaderField: "X-Goog-Upload-Protocol"), "resumable")
+        XCTAssertEqual(capturedRequest?.value(forHTTPHeaderField: "X-Goog-Upload-Command"), "start")
+        XCTAssertEqual(capturedRequest?.value(forHTTPHeaderField: "X-Goog-Upload-Header-Content-Length"), "100")
+        XCTAssertEqual(capturedRequest?.value(forHTTPHeaderField: "X-Goog-Upload-Header-Content-Type"), "application/pdf")
+        XCTAssertEqual(capturedRequest?.value(forHTTPHeaderField: "Content-Type"), "application/json")
+        XCTAssertTrue(capturedRequest?.url?.absoluteString.contains("upload/v1beta") ?? false)
+    }
+
+    func testUploadOperationError() async throws {
+        let errorOp = """
+        {
+            "name": "op-1", "done": true,
+            "error": {"code": 400, "message": "Invalid file format"}
+        }
+        """.data(using: .utf8)!
+
+        MockURLProtocol.requestHandler = { request in
+            let response = HTTPURLResponse(
+                url: request.url!,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: ["x-goog-upload-url": "https://example.com/upload"]
+            )!
+            return (response, errorOp)
+        }
+
+        let client = makeTestClient()
+        do {
+            _ = try await client.uploadToFileSearchStore(
+                storeName: "fileSearchStores/s-1",
+                data: "data".data(using: .utf8)!,
+                mimeType: "text/plain",
+                pollInterval: .milliseconds(10)
+            )
+            XCTFail("Expected error")
+        } catch let error as GeminiInteractionsError {
+            if case .httpError(let code, let body) = error {
+                XCTAssertEqual(code, 400)
+                XCTAssertTrue(body.contains("Invalid file format"))
+            } else {
+                XCTFail("Wrong error case: \(error)")
+            }
+        }
+    }
 }

@@ -208,6 +208,87 @@ extension InteractionsClient {
     }
 }
 
+// MARK: - Upload
+
+extension InteractionsClient {
+
+    public func uploadToFileSearchStore(
+        storeName: String,
+        data: Data,
+        mimeType: String,
+        displayName: String? = nil,
+        customMetadata: [CustomMetadata]? = nil,
+        pollInterval: Duration = .seconds(1),
+        timeout: Duration = .seconds(300)
+    ) async throws -> FileSearchDocument {
+        // Step 1: Initiate upload
+        let initiateURL = uploadInitiateURL(storeName: storeName)
+        var initiateRequest = makeRequest(url: initiateURL, method: "POST", body: try encode(
+            UploadMetadata(displayName: displayName, customMetadata: customMetadata, mimeType: mimeType)
+        ))
+        initiateRequest.setValue("resumable", forHTTPHeaderField: "X-Goog-Upload-Protocol")
+        initiateRequest.setValue("start", forHTTPHeaderField: "X-Goog-Upload-Command")
+        initiateRequest.setValue("\(data.count)", forHTTPHeaderField: "X-Goog-Upload-Header-Content-Length")
+        initiateRequest.setValue(mimeType, forHTTPHeaderField: "X-Goog-Upload-Header-Content-Type")
+
+        let (_, initiateResponse) = try await executeReturningResponse(initiateRequest)
+        guard let uploadURLString = initiateResponse.value(forHTTPHeaderField: "x-goog-upload-url"),
+              let uploadURL = URL(string: uploadURLString) else {
+            throw GeminiInteractionsError.httpError(statusCode: 0, body: "Missing x-goog-upload-url header in initiation response")
+        }
+
+        // Step 2: Upload bytes
+        var uploadRequest = URLRequest(url: uploadURL)
+        uploadRequest.httpMethod = "POST"
+        uploadRequest.httpBody = data
+        uploadRequest.setValue("0", forHTTPHeaderField: "X-Goog-Upload-Offset")
+        uploadRequest.setValue("upload, finalize", forHTTPHeaderField: "X-Goog-Upload-Command")
+        uploadRequest.setValue("\(data.count)", forHTTPHeaderField: "Content-Length")
+
+        let uploadData = try await execute(uploadRequest)
+        var operation = try decode(Operation.self, from: uploadData)
+
+        // Step 3: Poll for completion
+        let clock = ContinuousClock()
+        let deadline = clock.now + timeout
+        while operation.done != true {
+            if clock.now >= deadline {
+                throw GeminiInteractionsError.httpError(statusCode: 0, body: "Upload operation timed out")
+            }
+            let remaining = deadline - clock.now
+            try await Task.sleep(for: min(pollInterval, remaining))
+            let pollRequest = makeRequest(url: operationURL(name: operation.name), method: "GET")
+            let pollData = try await execute(pollRequest)
+            operation = try decode(Operation.self, from: pollData)
+        }
+
+        if let error = operation.error {
+            throw GeminiInteractionsError.httpError(
+                statusCode: error.code ?? 0,
+                body: error.message ?? "Upload operation failed"
+            )
+        }
+
+        guard let response = operation.response else {
+            throw GeminiInteractionsError.httpError(statusCode: 0, body: "Upload operation completed without response")
+        }
+
+        return response.document
+    }
+}
+
+struct UploadMetadata: Codable, Sendable {
+    let displayName: String?
+    let customMetadata: [CustomMetadata]?
+    let mimeType: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case displayName
+        case customMetadata
+        case mimeType
+    }
+}
+
 // MARK: - List Response Wrappers
 
 struct FileSearchStoreListResponse: Codable, Sendable {
