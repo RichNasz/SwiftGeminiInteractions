@@ -1,3 +1,4 @@
+#if canImport(SwiftSyntaxMacros)
 import XCTest
 import SwiftSyntaxMacros
 import SwiftSyntaxMacrosTestSupport
@@ -701,3 +702,4 @@ final class MacroExpansionTests: XCTestCase {
         )
     }
 }
+#endif
