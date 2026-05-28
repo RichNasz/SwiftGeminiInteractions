@@ -1465,14 +1465,6 @@ public struct EnvironmentParam: InteractionConfigParameter {
     public func apply(to request: inout InteractionRequest) { request.environment = value }
 }
 
-/// HTTP request timeout. Consumed by `InteractionsClient`, not sent to the API.
-public struct RequestTimeout: InteractionConfigParameter {
-    /// The timeout interval in seconds.
-    public let value: TimeInterval
-    public init(_ value: TimeInterval) { self.value = value }
-    public func apply(to request: inout InteractionRequest) { /* consumed by client */ }
-}
-
 /// Webhook configuration for background interaction notifications.
 public struct WebhookConfigParam: InteractionConfigParameter {
     private let value: WebhookConfig
@@ -1596,22 +1588,26 @@ public struct RetryEvent: Sendable {
 public actor InteractionsClient {
     private let apiKey: String
     private let apiRevision: String
+    private let retryPolicy: RetryPolicy?
     let session: URLSession
     let baseURL: URL
 
     /// Creates a new Interactions API client.
     /// - Parameter apiKey: Your Gemini API key.
     /// - Parameter apiRevision: API revision date (default: "2026-05-20").
-    public init(apiKey: String, apiRevision: String = "2026-05-20") {
+    /// - Parameter retryPolicy: Optional retry policy (default: RetryPolicy()). Pass nil to disable retries.
+    public init(apiKey: String, apiRevision: String = "2026-05-20", retryPolicy: RetryPolicy? = RetryPolicy()) {
         self.apiKey = apiKey
         self.apiRevision = apiRevision
+        self.retryPolicy = retryPolicy
         self.session = URLSession.shared
         self.baseURL = URL(string: "https://generativelanguage.googleapis.com")!
     }
 
-    init(apiKey: String, apiRevision: String = "2026-05-20", session: URLSession) {
+    init(apiKey: String, apiRevision: String = "2026-05-20", retryPolicy: RetryPolicy? = RetryPolicy(), session: URLSession) {
         self.apiKey = apiKey
         self.apiRevision = apiRevision
+        self.retryPolicy = retryPolicy
         self.session = session
         self.baseURL = URL(string: "https://generativelanguage.googleapis.com")!
     }

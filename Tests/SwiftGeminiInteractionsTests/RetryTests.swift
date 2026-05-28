@@ -47,4 +47,24 @@ struct RetryTests {
         #expect(event.backoffDuration == .seconds(2))
         #expect(event.nextTimeout == .seconds(180))
     }
+
+    @Test func clientDefaultRetryPolicy() async throws {
+        MockURLProtocol.requestHandler = { request in
+            let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+            return (response, makeInteractionJSON())
+        }
+        let client = makeTestClient()
+        let interaction = try await client.send(InteractionRequest(input: .text("test")))
+        #expect(interaction.id == "v1_test")
+    }
+
+    @Test func clientNilRetryPolicyDisablesRetry() async throws {
+        MockURLProtocol.requestHandler = { request in
+            let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+            return (response, makeInteractionJSON())
+        }
+        let client = makeTestClient(retryPolicy: nil)
+        let interaction = try await client.send(InteractionRequest(input: .text("test")))
+        #expect(interaction.id == "v1_test")
+    }
 }

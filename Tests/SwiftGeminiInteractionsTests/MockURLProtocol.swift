@@ -26,11 +26,11 @@ final class MockURLProtocol: URLProtocol, @unchecked Sendable {
     override func stopLoading() {}
 }
 
-func makeTestClient(apiKey: String = "test-key", apiRevision: String = "2026-05-20") -> InteractionsClient {
+func makeTestClient(apiKey: String = "test-key", apiRevision: String = "2026-05-20", retryPolicy: RetryPolicy? = RetryPolicy()) -> InteractionsClient {
     let config = URLSessionConfiguration.ephemeral
     config.protocolClasses = [MockURLProtocol.self]
     let session = URLSession(configuration: config)
-    return InteractionsClient(apiKey: apiKey, apiRevision: apiRevision, session: session)
+    return InteractionsClient(apiKey: apiKey, apiRevision: apiRevision, retryPolicy: retryPolicy, session: session)
 }
 
 /// Reads the body from a URLRequest, handling both httpBody and httpBodyStream.
