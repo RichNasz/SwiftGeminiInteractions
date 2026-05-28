@@ -238,6 +238,22 @@ struct RetryTests {
         #expect(callCount == 1)
     }
 
+    @Test func retryOnTimeoutThenSuccess() async throws {
+        var callCount = 0
+        MockURLProtocol.requestHandler = { request in
+            callCount += 1
+            if callCount == 1 {
+                throw URLError(.timedOut)
+            }
+            let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+            return (response, makeInteractionJSON())
+        }
+        let client = makeTestClient(retryPolicy: RetryPolicy(initialBackoff: .milliseconds(10)))
+        let interaction = try await client.send(InteractionRequest(input: .text("test")))
+        #expect(interaction.id == "v1_test")
+        #expect(callCount == 2)
+    }
+
     @Test func timeoutGrowsPerAttempt() async throws {
         var capturedTimeouts: [TimeInterval] = []
         var callCount = 0
