@@ -127,7 +127,7 @@ struct RetryTests {
         MockURLProtocol.requestHandler = { request in
             callCount += 1
             if callCount == 1 {
-                let response = HTTPURLResponse(url: request.url!, statusCode: 429, httpVersion: nil, headerFields: ["Retry-After": "5"])!
+                let response = HTTPURLResponse(url: request.url!, statusCode: 429, httpVersion: nil, headerFields: ["Retry-After": "1"])!
                 return (response, Data())
             }
             let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
@@ -140,7 +140,7 @@ struct RetryTests {
         let interaction = try await client.send(InteractionRequest(input: .text("test")))
         #expect(interaction.id == "v1_test")
         #expect(collector.events.count == 1)
-        #expect(collector.events[0].backoffDuration == .seconds(5))
+        #expect(collector.events[0].backoffDuration == .seconds(1))
     }
 
     @Test func nonRetryableErrorThrowsImmediately() async throws {
