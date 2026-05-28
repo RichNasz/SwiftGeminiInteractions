@@ -53,32 +53,29 @@ do {
 
 ## Rate Limiting
 
-When you receive `.rateLimitExceeded`, the API has returned HTTP 429. Implement exponential backoff to retry automatically:
+HTTP 429 responses are retried automatically by `InteractionsClient` when a `RetryPolicy` is configured (the default). The client respects the `Retry-After` header when present and falls back to exponential backoff otherwise.
+
+If all retry attempts are exhausted, `.rateLimitExceeded` is thrown. You only need to handle this case if you want to take action beyond the built-in retry:
 
 ```swift
-func sendWithRetry(
-    _ request: InteractionRequest,
-    client: InteractionsClient,
-    maxRetries: Int = 3
-) async throws -> Interaction {
-    var attempt = 0
-    while true {
-        do {
-            return try await client.send(request)
-        } catch GeminiInteractionsError.rateLimitExceeded {
-            attempt += 1
-            guard attempt <= maxRetries else {
-                throw GeminiInteractionsError.rateLimitExceeded
-            }
-            let delay = Duration.milliseconds(Int(pow(2.0, Double(attempt)) * 1000))
-            print("Rate limited. Retrying in \(delay)...")
-            try await Task.sleep(for: delay)
-        }
-    }
+do {
+    let interaction = try await client.send(request)
+} catch GeminiInteractionsError.rateLimitExceeded {
+    print("Rate limit exceeded after all retry attempts")
 }
-
-let interaction = try await sendWithRetry(request, client: client)
 ```
+
+To observe retry attempts as they happen, use the `onRetry` callback on `RetryPolicy`:
+
+```swift
+let client = InteractionsClient(apiKey: key, retryPolicy: RetryPolicy(
+    onRetry: { event in
+        print("Retry \(event.attempt)/\(event.maxAttempts), backing off \(event.backoffDuration)")
+    }
+))
+```
+
+See [Configuration — Retry Policy](configuration.md#retry-policy) for the full set of retry parameters.
 
 ## Tool Errors
 

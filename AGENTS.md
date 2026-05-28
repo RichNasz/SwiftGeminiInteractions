@@ -337,7 +337,8 @@ let agent = try Agent(
 
 **Request Configuration:**
 - `MaxToolCalls(Int)` — Maximum tool calls per turn
-- `RequestTimeout(Int)` — Timeout in seconds
+- `Store(Bool)` — Store interaction for chaining
+- `Background(Bool)` — Run in background mode
 
 **Multi-turn Configuration:**
 - `PreviousInteractionId(String)` — Chain to previous interaction

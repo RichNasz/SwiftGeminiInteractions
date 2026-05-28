@@ -8,7 +8,7 @@ status: alpha
 Every throw site in `InteractionsClient` wraps Foundation errors into `GeminiInteractionsError` before propagating to callers. Callers only ever see `GeminiInteractionsError` (or `CancellationError` from `Task` cooperative cancellation, which is not wrapped).
 
 ## URLError wrapping
-In `InteractionsClient.execute(_:)`, the `session.data(for:)` call is wrapped in `do/catch`. A caught `URLError` is rethrown as `GeminiInteractionsError.networkError(urlError)`. The associated value is the original `URLError` so callers can inspect `.code` and `.localizedDescription`.
+In `InteractionsClient`'s request execution path (`performRequest` / `singleAttempt`), the `session.data(for:)` call is wrapped in `do/catch`. A caught `URLError` is rethrown as `GeminiInteractionsError.networkError(urlError)` — unless the error is `URLError.timedOut` and retry is enabled with attempts remaining, in which case it triggers a retry. The associated value is the original `URLError` so callers can inspect `.code` and `.localizedDescription`.
 
 ## HTTP 429
 When the retry helper receives an `HTTPURLResponse` with status code 429:

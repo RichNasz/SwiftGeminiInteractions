@@ -120,16 +120,44 @@ These parameters do not modify the request — they are read by orchestration la
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `MaxToolCalls(Int)` | `Int` | Maximum tool call iterations. Read by orchestration. |
-| `RequestTimeout(TimeInterval)` | `TimeInterval` | Request timeout in seconds. Read by orchestration. |
 
 ```swift
 let agent = try Agent(client: client, model: "gemini-2.5-flash-preview-05-20") {
     MaxToolCalls(5)           // Limits tool loop iterations
-    RequestTimeout(60.0)      // 60 second timeout
 }
 ```
 
 These values are stored in the `Agent` or `ToolSession` instance but do not appear in the wire protocol.
+
+### Retry Policy
+
+`InteractionsClient` automatically retries transient errors (429, 500, 503, timeout) with exponential backoff. This is configured at init time, not via config parameters:
+
+```swift
+// Default: retry enabled (3 attempts, 2s initial backoff)
+let client = InteractionsClient(apiKey: key)
+
+// Custom policy
+let client = InteractionsClient(apiKey: key, retryPolicy: RetryPolicy(
+    maxAttempts: 5,
+    initialBackoff: .seconds(1),
+    initialTimeout: .seconds(60)
+))
+
+// Disable retry
+let client = InteractionsClient(apiKey: key, retryPolicy: nil)
+```
+
+| Property | Default | Description |
+|----------|---------|-------------|
+| `maxAttempts` | 3 | Total attempts including the first |
+| `initialBackoff` | 2s | Delay before first retry |
+| `backoffMultiplier` | 2.0 | Exponential multiplier (2s → 4s → 8s) |
+| `initialTimeout` | 120s | URLSession timeout for first attempt |
+| `timeoutMultiplier` | 1.5 | Timeout grows per attempt (120s → 180s → 270s) |
+| `maxTimeout` | 300s | Cap on timeout growth |
+| `retryableStatusCodes` | {429, 500, 503} | HTTP codes that trigger retry |
+| `onRetry` | nil | Optional callback for observing retries |
 
 ## Structured Output
 

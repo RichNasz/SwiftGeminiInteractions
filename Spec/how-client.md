@@ -26,8 +26,8 @@ The `execute(_:)` method catches `URLError` specifically and rethrows as `Gemini
 
 ## URLSession injection for testing
 `InteractionsClient` has two initializers:
-- `public init(apiKey: String, apiRevision: String = "2026-05-20")` — creates `URLSession.shared` internally. This is the only public init.
-- `init(apiKey: String, apiRevision: String = "2026-05-20", session: URLSession)` — internal (no `public` modifier). Accepts a caller-provided `URLSession`, used in unit tests configured with `MockURLProtocol` as a protocol handler.
+- `public init(apiKey: String, apiRevision: String = "2026-05-20", retryPolicy: RetryPolicy? = RetryPolicy())` — creates `URLSession.shared` internally. This is the only public init.
+- `init(apiKey: String, apiRevision: String = "2026-05-20", retryPolicy: RetryPolicy? = RetryPolicy(), session: URLSession)` — internal (no `public` modifier). Accepts a caller-provided `URLSession`, used in unit tests configured with `MockURLProtocol` as a protocol handler.
 
 ## Retry with backoff
 `InteractionsClient` accepts an optional `RetryPolicy?` at init time (default: `RetryPolicy()`, nil disables retry). The retry logic lives in a private helper method that both `execute(_:)` and `executeReturningResponse(_:)` call.
