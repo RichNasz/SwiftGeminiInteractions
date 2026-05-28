@@ -1533,6 +1533,61 @@ public struct ToolsBuilder {
     public static func buildExpression(_ expression: InteractionTool) -> [InteractionTool] { [expression] }
 }
 
+// MARK: - Retry
+
+public struct RetryPolicy: Sendable {
+    public let maxAttempts: Int
+    public let initialBackoff: Duration
+    public let backoffMultiplier: Double
+    public let initialTimeout: Duration
+    public let timeoutMultiplier: Double
+    public let maxTimeout: Duration
+    public let retryableStatusCodes: Set<Int>
+    public let onRetry: (@Sendable (RetryEvent) -> Void)?
+
+    public init(
+        maxAttempts: Int = 3,
+        initialBackoff: Duration = .seconds(2),
+        backoffMultiplier: Double = 2.0,
+        initialTimeout: Duration = .seconds(120),
+        timeoutMultiplier: Double = 1.5,
+        maxTimeout: Duration = .seconds(300),
+        retryableStatusCodes: Set<Int> = [429, 500, 503],
+        onRetry: (@Sendable (RetryEvent) -> Void)? = nil
+    ) {
+        self.maxAttempts = maxAttempts
+        self.initialBackoff = initialBackoff
+        self.backoffMultiplier = backoffMultiplier
+        self.initialTimeout = initialTimeout
+        self.timeoutMultiplier = timeoutMultiplier
+        self.maxTimeout = maxTimeout
+        self.retryableStatusCodes = retryableStatusCodes
+        self.onRetry = onRetry
+    }
+}
+
+public struct RetryEvent: Sendable {
+    public let attempt: Int
+    public let maxAttempts: Int
+    public let error: GeminiInteractionsError
+    public let backoffDuration: Duration
+    public let nextTimeout: Duration
+
+    public init(
+        attempt: Int,
+        maxAttempts: Int,
+        error: GeminiInteractionsError,
+        backoffDuration: Duration,
+        nextTimeout: Duration
+    ) {
+        self.attempt = attempt
+        self.maxAttempts = maxAttempts
+        self.error = error
+        self.backoffDuration = backoffDuration
+        self.nextTimeout = nextTimeout
+    }
+}
+
 // MARK: - InteractionsClient
 
 /// A client for the Gemini Interactions API.
