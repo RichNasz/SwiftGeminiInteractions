@@ -1641,27 +1641,16 @@ public actor InteractionsClient {
     }
 
     func execute(_ urlRequest: URLRequest) async throws -> Data {
-        let (data, response): (Data, URLResponse)
-        do {
-            (data, response) = try await session.data(for: urlRequest)
-        } catch let urlError as URLError {
-            throw GeminiInteractionsError.networkError(urlError)
-        }
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw GeminiInteractionsError.httpError(statusCode: 0, body: "No HTTP response")
-        }
-        switch httpResponse.statusCode {
-        case 200...299:
-            return data
-        case 429:
-            throw GeminiInteractionsError.rateLimitExceeded
-        default:
-            let body = String(data: data, encoding: .utf8) ?? ""
-            throw GeminiInteractionsError.httpError(statusCode: httpResponse.statusCode, body: body)
-        }
+        let (data, _) = try await performRequest(urlRequest)
+        return data
     }
 
     func executeReturningResponse(_ urlRequest: URLRequest) async throws -> (Data, HTTPURLResponse) {
+        return try await performRequest(urlRequest)
+    }
+
+    /// Single-attempt request with no retry logic. Preserves the original behavior when retryPolicy is nil.
+    private func singleAttempt(_ urlRequest: URLRequest) async throws -> (Data, HTTPURLResponse) {
         let (data, response): (Data, URLResponse)
         do {
             (data, response) = try await session.data(for: urlRequest)
@@ -1680,6 +1669,108 @@ public actor InteractionsClient {
             let body = String(data: data, encoding: .utf8) ?? ""
             throw GeminiInteractionsError.httpError(statusCode: httpResponse.statusCode, body: body)
         }
+    }
+
+    /// Performs a request with retry-with-backoff when a retryPolicy is configured.
+    /// When retryPolicy is nil, delegates to singleAttempt for unchanged legacy behavior.
+    private func performRequest(_ urlRequest: URLRequest) async throws -> (Data, HTTPURLResponse) {
+        guard let policy = retryPolicy else {
+            return try await singleAttempt(urlRequest)
+        }
+
+        var lastError: GeminiInteractionsError?
+
+        for attempt in 1...policy.maxAttempts {
+            // Calculate timeout for this attempt
+            var request = urlRequest
+            let timeoutSeconds = Double(policy.initialTimeout.components.seconds)
+                + Double(policy.initialTimeout.components.attoseconds) / 1e18
+            let calculatedTimeout = timeoutSeconds * pow(policy.timeoutMultiplier, Double(attempt - 1))
+            let maxTimeoutSeconds = Double(policy.maxTimeout.components.seconds)
+                + Double(policy.maxTimeout.components.attoseconds) / 1e18
+            request.timeoutInterval = min(calculatedTimeout, maxTimeoutSeconds)
+
+            // Attempt the request
+            let data: Data
+            let response: URLResponse
+            do {
+                (data, response) = try await session.data(for: request)
+            } catch let urlError as URLError {
+                if urlError.code == .timedOut && attempt < policy.maxAttempts {
+                    let error = GeminiInteractionsError.networkError(urlError)
+                    lastError = error
+                    let backoff = policy.initialBackoff * Int(pow(policy.backoffMultiplier, Double(attempt - 1)))
+                    let nextTimeoutSeconds = min(
+                        timeoutSeconds * pow(policy.timeoutMultiplier, Double(attempt)),
+                        maxTimeoutSeconds
+                    )
+                    let nextTimeout = Duration.seconds(nextTimeoutSeconds)
+                    policy.onRetry?(RetryEvent(
+                        attempt: attempt,
+                        maxAttempts: policy.maxAttempts,
+                        error: error,
+                        backoffDuration: backoff,
+                        nextTimeout: nextTimeout
+                    ))
+                    try await Task.sleep(for: backoff)
+                    continue
+                }
+                throw GeminiInteractionsError.networkError(urlError)
+            }
+
+            // Non-HTTP response is never retryable
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw GeminiInteractionsError.httpError(statusCode: 0, body: "No HTTP response")
+            }
+
+            // Success
+            if (200...299).contains(httpResponse.statusCode) {
+                return (data, httpResponse)
+            }
+
+            // Determine the error for this status code
+            let error: GeminiInteractionsError
+            if httpResponse.statusCode == 429 {
+                error = .rateLimitExceeded
+            } else {
+                let body = String(data: data, encoding: .utf8) ?? ""
+                error = .httpError(statusCode: httpResponse.statusCode, body: body)
+            }
+
+            // Check if this status code is retryable and we have attempts remaining
+            if policy.retryableStatusCodes.contains(httpResponse.statusCode) && attempt < policy.maxAttempts {
+                lastError = error
+
+                // Calculate backoff; for 429 with Retry-After header, use that value instead
+                var backoff = policy.initialBackoff * Int(pow(policy.backoffMultiplier, Double(attempt - 1)))
+                if httpResponse.statusCode == 429,
+                   let retryAfterString = httpResponse.value(forHTTPHeaderField: "Retry-After"),
+                   let retryAfterValue = Int64(retryAfterString) {
+                    backoff = .seconds(retryAfterValue)
+                }
+
+                let nextTimeoutSeconds = min(
+                    timeoutSeconds * pow(policy.timeoutMultiplier, Double(attempt)),
+                    maxTimeoutSeconds
+                )
+                let nextTimeout = Duration.seconds(nextTimeoutSeconds)
+                policy.onRetry?(RetryEvent(
+                    attempt: attempt,
+                    maxAttempts: policy.maxAttempts,
+                    error: error,
+                    backoffDuration: backoff,
+                    nextTimeout: nextTimeout
+                ))
+                try await Task.sleep(for: backoff)
+                continue
+            }
+
+            // Not retryable or no attempts remaining — throw
+            throw error
+        }
+
+        // All attempts exhausted — throw the last error
+        throw lastError!
     }
 
     func decode<T: Decodable>(_ type: T.Type, from data: Data) throws -> T {
