@@ -29,10 +29,23 @@ The `execute(_:)` method catches `URLError` specifically and rethrows as `Gemini
 - `public init(apiKey: String, apiRevision: String = "2026-05-20")` — creates `URLSession.shared` internally. This is the only public init.
 - `init(apiKey: String, apiRevision: String = "2026-05-20", session: URLSession)` — internal (no `public` modifier). Accepts a caller-provided `URLSession`, used in unit tests configured with `MockURLProtocol` as a protocol handler.
 
-## RequestTimeout parameter
-`RequestTimeout` is an `InteractionConfigParameter` whose `apply(to:)` is intentionally a no-op — it does not modify the `InteractionRequest`. Instead, `InteractionsClient` reads `RequestTimeout.value` from the config params array before building the `URLRequest` and sets `urlRequest.timeoutInterval`. This means timeout configuration happens at the client/transport level, not in the JSON body.
+## Retry with backoff
+`InteractionsClient` accepts an optional `RetryPolicy?` at init time (default: `RetryPolicy()`, nil disables retry). The retry logic lives in a private helper method that both `execute(_:)` and `executeReturningResponse(_:)` call.
 
-Note: looking at the actual implementation, `RequestTimeout` has a no-op `apply` and a public `value: TimeInterval`, but the current `InteractionsClient.send/get/delete/cancel` implementations do not explicitly extract and apply it to `URLRequest.timeoutInterval` — this is reserved behavior. The stream methods also do not extract it currently. This spec describes the intended contract: `RequestTimeout` is a client-level concern, not a request-body concern.
+**Retry loop algorithm:**
+1. For each attempt (1 to `maxAttempts`):
+   - Set `urlRequest.timeoutInterval` to `min(initialTimeout * pow(timeoutMultiplier, attempt - 1), maxTimeout)`, converted to `TimeInterval`.
+   - Call `session.data(for: urlRequest)`.
+   - On success (2xx): return result.
+   - On `URLError.timedOut` and attempts remain: call `onRetry` callback, sleep for backoff duration, continue.
+   - On HTTP status in `retryableStatusCodes` and attempts remain: call `onRetry`, sleep, continue. For 429, if `Retry-After` header is present (integer seconds), use it as backoff instead of calculated backoff.
+   - On other errors: throw immediately (not retryable).
+2. After all attempts exhausted: throw the last error.
+3. Backoff calculation: `initialBackoff * pow(backoffMultiplier, attempt - 1)`.
+
+When `retryPolicy` is `nil`, the client makes a single attempt with no timeout adjustment (matching pre-retry behavior).
+
+The `RequestTimeout` config parameter has been removed. Timeout configuration is now handled by `RetryPolicy.initialTimeout`.
 
 ## File search store endpoints
 File search store management lives under `v1beta/fileSearchStores` (not `v1beta/interactions`). URL helpers in `FileSearchStores.swift` construct paths against the same `baseURL`. The `name` fields from the API are full resource paths (e.g. `fileSearchStores/my-store-123`), so URL helpers append them directly to `{baseURL}/v1beta/`.

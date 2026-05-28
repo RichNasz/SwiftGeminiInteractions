@@ -11,7 +11,9 @@ Every throw site in `InteractionsClient` wraps Foundation errors into `GeminiInt
 In `InteractionsClient.execute(_:)`, the `session.data(for:)` call is wrapped in `do/catch`. A caught `URLError` is rethrown as `GeminiInteractionsError.networkError(urlError)`. The associated value is the original `URLError` so callers can inspect `.code` and `.localizedDescription`.
 
 ## HTTP 429
-When `execute` receives an `HTTPURLResponse` with status code 429, it throws `GeminiInteractionsError.rateLimitExceeded`. No body is read or inspected for this specific case.
+When the retry helper receives an `HTTPURLResponse` with status code 429:
+- If retry is enabled and attempts remain: the error is retryable. The `Retry-After` response header (integer seconds) is respected if present, overriding the calculated backoff. The `onRetry` callback receives a `RetryEvent` with `.rateLimitExceeded` as the error.
+- If retry is disabled or attempts exhausted: throws `GeminiInteractionsError.rateLimitExceeded`. No body is read or inspected for this specific case.
 
 ## HTTP non-2xx (other than 429)
 When the status code is outside 200–299 and not 429, `execute` reads the response body as a UTF-8 string (falling back to an empty string) and throws `GeminiInteractionsError.httpError(statusCode: httpResponse.statusCode, body: bodyString)`.
