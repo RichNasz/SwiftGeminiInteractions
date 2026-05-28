@@ -1,7 +1,7 @@
 # Retry-with-Backoff — Design Spec
 
 **Date:** 2026-05-27
-**Status:** Approved
+**Status:** Implemented
 
 ## Summary
 

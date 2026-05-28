@@ -23,6 +23,9 @@ No Foundation errors escape the public API. Every catch site wraps into `GeminiI
 ### API Revision Header
 `Api-Revision: 2026-05-20` on every request. Configurable at `InteractionsClient` init time.
 
+### Retry with Backoff
+`InteractionsClient` accepts an optional `RetryPolicy` at init time. When enabled (default), transient errors (429, 500, 503, timeout) are retried with exponential backoff. The retry logic is in a private `performRequest()` helper shared by `execute()` and `executeReturningResponse()`. `RequestTimeout` was removed — `RetryPolicy.initialTimeout` replaces it.
+
 ### Testing Strategy
 `MockURLProtocol` intercepts `URLSession` at the protocol level. `InteractionsClient` has an internal `init` that accepts a `URLSession` configured with `MockURLProtocol`. Integration tests require `RUN_INTEGRATION_TESTS=1` env var.
 
