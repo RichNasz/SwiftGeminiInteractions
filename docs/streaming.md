@@ -51,7 +51,7 @@ The client automatically sets `stream: true` and `store: true` on streaming requ
 |-------|---------|--------------|
 | `.interactionCreated(Interaction)` | Full interaction object | Stream starts, contains initial metadata |
 | `.interactionStatusUpdate(InteractionStatus)` | New status | Status transitions (e.g., executing → completed) |
-| `.stepStart(stepType: String, index: Int)` | Step type and position | New step begins generation |
+| `.stepStart(stepType: String, index: Int, name: String?)` | Step type, position, and optional name (e.g. function name for `function_call` steps) | New step begins generation |
 | `.stepDelta(InteractionStreamDelta, stepIndex: Int)` | Content delta and position | Incremental content arrives |
 | `.stepStop(index: Int)` | Step position | Step generation completes |
 | `.interactionCompleted(Interaction)` | Final interaction state | Stream ends successfully |

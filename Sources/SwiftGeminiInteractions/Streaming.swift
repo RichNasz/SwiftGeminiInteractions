@@ -186,7 +186,7 @@ public enum InteractionStreamEvent: Codable, Sendable {
     /// The interaction's status changed (e.g. processing, completed).
     case interactionStatusUpdate(InteractionStatus)
     /// A new step has started at the given index.
-    case stepStart(stepType: String, index: Int)
+    case stepStart(stepType: String, index: Int, name: String?)
     /// An incremental delta within the step at `stepIndex`.
     case stepDelta(InteractionStreamDelta, stepIndex: Int)
     /// The step at the given index has finished.
@@ -203,7 +203,7 @@ public enum InteractionStreamEvent: Codable, Sendable {
         case interaction, status, index, delta, message, step
     }
 
-    private enum StepCodingKeys: String, CodingKey { case type }
+    private enum StepCodingKeys: String, CodingKey { case type, name }
 
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -217,7 +217,8 @@ public enum InteractionStreamEvent: Codable, Sendable {
             let stepContainer = try container.nestedContainer(keyedBy: StepCodingKeys.self, forKey: .step)
             self = .stepStart(
                 stepType: try stepContainer.decode(String.self, forKey: .type),
-                index: try container.decode(Int.self, forKey: .index)
+                index: try container.decode(Int.self, forKey: .index),
+                name: try stepContainer.decodeIfPresent(String.self, forKey: .name)
             )
         case "step.delta":
             let delta = try container.decode(InteractionStreamDeltaWrapper.self, forKey: .delta)
